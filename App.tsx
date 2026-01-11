@@ -3,9 +3,7 @@ import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import { Canvas, ThreeEvent, useFrame, useThree } from '@react-three/fiber';
 import { PerspectiveCamera, Center, Environment, OrbitControls, Edges } from '@react-three/drei';
 import * as THREE from 'three';
-import { Vec3 } from './lib/vec3';
-import { Mesh } from './lib/mesh';
-import { makeShapeMesh, ShapeId } from './lib/shapes';
+import { Vec3, Mesh, makeShapeMesh, ShapeId } from './core';
 
 // --- Semantic Constants ---
 const THEME_DARK = "#2D3436";
