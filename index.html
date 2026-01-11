@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometry | Projective Instrument</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
+        
+        body { 
+          margin: 0; 
+          padding: 0; 
+          overflow: hidden; 
+          background-color: #E8EBF0; 
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          user-select: none; 
+          color: #2D3436;
+        }
+        
+        .wave-container {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          z-index: -1;
+          overflow: hidden;
+          pointer-events: none;
+        }
+
+        .wave-svg {
+          position: absolute;
+          width: 200%;
+          height: 100%;
+          opacity: 0.2;
+          filter: grayscale(1);
+        }
+
+        .stipple-overlay {
+          position: absolute;
+          inset: 0;
+          background-image: radial-gradient(#94a3b8 0.5px, transparent 0.5px);
+          background-size: 24px 24px;
+          opacity: 0.15;
+          z-index: -1;
+          pointer-events: none;
+        }
+
+        .glass-card {
+          background: rgba(255, 255, 255, 0.85);
+          backdrop-filter: blur(16px);
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          box-shadow: 0 30px 60px -12px rgba(50, 50, 93, 0.12), 0 18px 36px -18px rgba(0, 0, 0, 0.15);
+        }
+
+        canvas { display: block; }
+        
+        .viewport-container { 
+          height: 100vh; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          padding: 2rem;
+          position: relative;
+        }
+
+        /* Custom range slider styling */
+        input[type=range] {
+          -webkit-appearance: none;
+          background: transparent;
+        }
+        input[type=range]:focus {
+          outline: none;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+          width: 100%;
+          height: 4px;
+          cursor: pointer;
+          background: #cbd5e1;
+          border-radius: 2px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+          border: 2px solid #fff;
+          height: 20px;
+          width: 20px;
+          border-radius: 50%;
+          background: currentColor;
+          cursor: pointer;
+          -webkit-appearance: none;
+          margin-top: -8px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          transition: transform 0.15s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+          transform: scale(1.1);
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+    "three": "https://esm.sh/three@0.173.0",
+    "@react-three/fiber": "https://esm.sh/@react-three/fiber@9.0.4?external=three,react,react-dom",
+    "@react-three/drei": "https://esm.sh/@react-three/drei@10.0.2?external=three,react,react-dom,@react-three/fiber",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/"
+  }
+}
+</script>
+</head>
+<body>
+    <div id="root"></div>
+</body>
+</html>

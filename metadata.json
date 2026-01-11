@@ -1,0 +1,5 @@
+{
+  "name": "Projective Sphere Explorer",
+  "description": "An interactive 3D visualization tool for exploring projective geometry and spotlight hit-testing on spherical meshes. Experiment with RP2 representatives and antipodal light effects.",
+  "requestFramePermissions": []
+}
