@@ -1,6 +1,8 @@
 # SEAM  
 ## Quotient Symmetry in Information Geometry
 
+**Stochastic Eversion of Antipodal Manifolds**
+
 SEAM is an interactive pedagogical instrument for understanding **quotient symmetry** and **information geometry** through the visualization of the **real projective plane (ℝP²)**.
 
 The app demonstrates one foundational idea:
