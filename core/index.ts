@@ -16,8 +16,10 @@
 // Type Exports
 // ============================================================================
 
+// Export Vec3 as both type and namespace
+export { Vec3 } from './types';
+
 export type {
-  Vec3,
   Ray,
   Cone,
   Mesh,
@@ -31,9 +33,6 @@ export type {
   PullbackResult,
   SourceEffect
 } from './types';
-
-// Re-export Vec3 operations
-export { Vec3 } from './types';
 
 // ============================================================================
 // Quotient Space Operations
