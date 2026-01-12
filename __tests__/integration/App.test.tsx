@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import type { Vec3 } from '@/core/types';
 
 describe('App Integration Tests', () => {
   it('successfully imports core modules', async () => {
