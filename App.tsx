@@ -7,6 +7,7 @@ import { Vec3, Mesh, makeShapeMesh, ShapeId } from './core';
 import { AntipodalColorPicker } from './app/ui/AntipodalColorPicker';
 import { getAntipodalColor } from './app/ui/colorUtils';
 import { FiberBundles } from './app/rendering/FiberBundle';
+import { updatePositionFromWASD, type WASDState } from './app/ui/sphericalNavigation';
 
 // --- Semantic Constants ---
 const THEME_DARK = "#2D3436";
@@ -216,18 +217,58 @@ const ObjectMesh = ({
   );
 };
 
-const SelectorInstrument = ({ 
-  direction, 
-  angle, 
+// Drive Controller - handles continuous WASD movement
+const DriveController = ({
+  active,
+  keys,
+  currentPosition,
+  onPositionUpdate,
+  onFiberSpawn
+}: {
+  active: boolean;
+  keys: WASDState;
+  currentPosition: Vec3;
+  onPositionUpdate: (pos: Vec3) => void;
+  onFiberSpawn: (pos: Vec3) => void;
+}) => {
+  const frameCountRef = useRef(0);
+
+  useFrame((state, delta) => {
+    if (!active) return;
+
+    // Update position based on WASD input
+    const newPosition = updatePositionFromWASD(currentPosition, keys, delta, 2.0);
+
+    // Only update if position changed
+    const changed = !Vec3.approxEq(newPosition, currentPosition, 0.0001);
+    if (changed) {
+      onPositionUpdate(newPosition);
+
+      // Spawn fiber bundles every 3 frames (~20 per second at 60fps)
+      frameCountRef.current++;
+      if (frameCountRef.current % 3 === 0) {
+        onFiberSpawn(newPosition);
+      }
+    }
+  });
+
+  return null; // This component doesn't render anything
+};
+
+const SelectorInstrument = ({
+  direction,
+  angle,
   uColor,
   negUColor,
-  onUpdate 
-}: { 
-  direction: Vec3, 
-  angle: number, 
+  onUpdate,
+  driveMode
+}: {
+  direction: Vec3,
+  angle: number,
   uColor: string,
   negUColor: string,
-  onUpdate: (dir: Vec3) => void 
+  onUpdate: (dir: Vec3) => void;
+  driveMode: boolean;
 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   
@@ -308,6 +349,15 @@ const App: React.FC = () => {
   // Antipodal color is always computed from uColor
   const negUColor = useMemo(() => getAntipodalColor(uColor), [uColor]);
 
+  // Drive mode state
+  const [driveMode, setDriveMode] = useState(false);
+  const [wasdKeys, setWasdKeys] = useState<WASDState>({
+    w: false,
+    a: false,
+    s: false,
+    d: false
+  });
+
   // Fiber bundles state - tracks visualizations of π⁻¹([u])
   const [fiberBundles, setFiberBundles] = useState<Array<{
     quotientPoint: Vec3;
@@ -316,12 +366,71 @@ const App: React.FC = () => {
     timestamp: number;
   }>>([]);
 
-  // Callback when clicking quotient sphere
-  const handleQuotientClick = useCallback((dir: Vec3) => {
-    // Update current direction
-    setCurrentDir(dir);
+  // Keyboard event handlers for drive mode
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
 
-    // Create fiber bundle visualization
+      // ESC exits drive mode
+      if (key === 'escape' && driveMode) {
+        setDriveMode(false);
+        return;
+      }
+
+      // WASD keys
+      if (!driveMode) return;
+
+      if (key === 'w') setWasdKeys(prev => ({ ...prev, w: true }));
+      if (key === 'a') setWasdKeys(prev => ({ ...prev, a: true }));
+      if (key === 's') setWasdKeys(prev => ({ ...prev, s: true }));
+      if (key === 'd') setWasdKeys(prev => ({ ...prev, d: true }));
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (!driveMode) return;
+
+      const key = e.key.toLowerCase();
+      if (key === 'w') setWasdKeys(prev => ({ ...prev, w: false }));
+      if (key === 'a') setWasdKeys(prev => ({ ...prev, a: false }));
+      if (key === 's') setWasdKeys(prev => ({ ...prev, s: false }));
+      if (key === 'd') setWasdKeys(prev => ({ ...prev, d: false }));
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [driveMode]);
+
+  // Callback when clicking quotient sphere - toggles drive mode
+  const handleQuotientClick = useCallback((dir: Vec3) => {
+    if (driveMode) {
+      // If already in drive mode, exit it
+      setDriveMode(false);
+    } else {
+      // Enter drive mode at clicked position
+      setCurrentDir(dir);
+      setDriveMode(true);
+
+      // Create initial fiber bundle
+      const negDir: Vec3 = [-dir[0], -dir[1], -dir[2]];
+      setFiberBundles(prev => [
+        ...prev,
+        {
+          quotientPoint: dir,
+          representatives: [dir, negDir],
+          colors: [uColor, negUColor],
+          timestamp: Date.now()
+        }
+      ]);
+    }
+  }, [driveMode, uColor, negUColor]);
+
+  // Spawn fiber bundle during drive mode
+  const spawnFiberBundle = useCallback((dir: Vec3) => {
     const negDir: Vec3 = [-dir[0], -dir[1], -dir[2]];
     setFiberBundles(prev => [
       ...prev,
@@ -388,18 +497,43 @@ const App: React.FC = () => {
                 <span className="text-[9px] font-bold text-slate-300 uppercase italic">Identification: u ≡ −u</span>
               </div>
             </div>
+
+            {/* Drive Mode UI Indicator */}
+            {driveMode && (
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none">
+                <div className="bg-black/80 text-white px-6 py-3 rounded-lg text-center backdrop-blur-sm">
+                  <div className="text-sm font-bold mb-1">🎮 DRIVE MODE ACTIVE</div>
+                  <div className="text-xs opacity-75">WASD: Navigate | ESC: Exit</div>
+                </div>
+              </div>
+            )}
+
             <Canvas dpr={[1, 2]}>
               <PerspectiveCamera makeDefault position={[0, 0, 4]} fov={35} />
-              <OrbitControls enableDamping rotateSpeed={0.5} enablePan={false} enableZoom={false} />
+              <OrbitControls
+                enableDamping
+                rotateSpeed={0.5}
+                enablePan={false}
+                enableZoom={false}
+                enabled={!driveMode}
+              />
               <ambientLight intensity={0.5} />
               <pointLight position={[10, 10, 10]} intensity={1} />
               <Center>
+                <DriveController
+                  active={driveMode}
+                  keys={wasdKeys}
+                  currentPosition={currentDir}
+                  onPositionUpdate={setCurrentDir}
+                  onFiberSpawn={spawnFiberBundle}
+                />
                 <SelectorInstrument
                   direction={currentDir}
                   angle={halfAngle}
                   uColor={uColor}
                   negUColor={negUColor}
                   onUpdate={handleQuotientClick}
+                  driveMode={driveMode}
                 />
                 <FiberBundles bundles={fiberBundles} maxBundles={5} />
               </Center>
