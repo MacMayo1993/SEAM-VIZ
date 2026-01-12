@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import type { Vec3 } from '@/core/types';
 
 describe('App Integration Tests', () => {
   it('successfully imports core modules', async () => {
@@ -32,7 +33,7 @@ describe('App Integration Tests', () => {
   });
 
   it('modules work together correctly', async () => {
-    const { Vec3 } = await import('@/core/types');
+    const { Vec3: Vec3Namespace } = await import('@/core/types');
     const { classOf, quotientDistance } = await import('@/core/quotient');
 
     const v1: Vec3 = [1, 0, 0];
@@ -61,7 +62,7 @@ describe('App Integration Tests', () => {
   });
 
   it('transformation pipeline works', async () => {
-    const { Vec3 } = await import('@/core/types');
+    const { Vec3: Vec3Namespace } = await import('@/core/types');
     const { rotationZ, matVecMul } = await import('@/core/transforms');
     const { classOf } = await import('@/core/quotient');
 
@@ -74,32 +75,32 @@ describe('App Integration Tests', () => {
     const qClass = classOf(rotated);
 
     expect(qClass.canonical).toBeDefined();
-    expect(Vec3.norm(qClass.canonical)).toBeCloseTo(1);
+    expect(Vec3Namespace.norm(qClass.canonical)).toBeCloseTo(1);
   });
 });
 
 describe('Core Type System', () => {
   it('Vec3 operations maintain mathematical properties', async () => {
-    const { Vec3 } = await import('@/core/types');
+    const { Vec3: Vec3Namespace } = await import('@/core/types');
 
     const a: Vec3 = [1, 2, 3];
     const b: Vec3 = [4, 5, 6];
 
     // Commutativity of addition
-    const sum1 = Vec3.add(a, b);
-    const sum2 = Vec3.add(b, a);
-    expect(Vec3.approxEq(sum1, sum2)).toBe(true);
+    const sum1 = Vec3Namespace.add(a, b);
+    const sum2 = Vec3Namespace.add(b, a);
+    expect(Vec3Namespace.approxEq(sum1, sum2)).toBe(true);
 
     // Dot product symmetry
-    expect(Vec3.dot(a, b)).toBeCloseTo(Vec3.dot(b, a));
+    expect(Vec3Namespace.dot(a, b)).toBeCloseTo(Vec3Namespace.dot(b, a));
   });
 
   it('Quotient space operations respect antipodal symmetry', async () => {
-    const { Vec3 } = await import('@/core/types');
+    const { Vec3: Vec3Namespace } = await import('@/core/types');
     const { classOf, classEquals } = await import('@/core/quotient');
 
     const v: Vec3 = [1, 2, 3];
-    const negV = Vec3.neg(v);
+    const negV = Vec3Namespace.neg(v);
 
     const class1 = classOf(v);
     const class2 = classOf(negV);
