@@ -13,51 +13,6 @@ import { updatePositionFromWASD, type WASDState } from './app/ui/sphericalNaviga
 const THEME_DARK = "#2D3436";
 const INACTIVE_GRAY = "#E2E8F0"; 
 
-// --- Shaders ---
-
-const ObjectShader = {
-  uniforms: {
-    uDir: { value: new THREE.Vector3(0, 1, 0) },
-    uAperture: { value: 0.4 },
-    uColorU: { value: new THREE.Color("#00e5bc") },
-    uColorNegU: { value: new THREE.Color("#6366f1") },
-    uInactiveColor: { value: new THREE.Color(INACTIVE_GRAY) },
-  },
-  vertexShader: `
-    varying vec3 vNormal;
-    varying vec3 vViewDir;
-    void main() {
-      vNormal = normalize(normalMatrix * normal);
-      vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
-      vViewDir = normalize(-modelViewPosition.xyz);
-      gl_Position = projectionMatrix * modelViewPosition;
-    }
-  `,
-  fragmentShader: `
-    uniform vec3 uDir;
-    uniform float uAperture;
-    uniform vec3 uColorU;
-    uniform vec3 uColorNegU;
-    uniform vec3 uInactiveColor;
-    varying vec3 vNormal;
-    varying vec3 vViewDir;
-
-    void main() {
-      // Re-normalize interpolants
-      vec3 n = normalize(vNormal);
-      vec3 v = normalize(vViewDir);
-      
-      // We need world-space or local-space normal for direction check
-      // For simplicity, assume the geometry is centered and unit-ish
-      // We'll pass the light dir in view space or just use world-space logic
-      // To keep it simple, we use the raw normal (local space) since 
-      // the light direction is provided in local space too.
-      // But we need to use the model's normal. 
-      // Actually, passing the direction as a uniform and using the standard 'normal' is correct for local coords.
-    }
-  `
-};
-
 // --- Components ---
 
 const InternalCone = ({ dir, color, angle, renderOrder }: { dir: Vec3, color: string, angle: number, renderOrder: number }) => {
