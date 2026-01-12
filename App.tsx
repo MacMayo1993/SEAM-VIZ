@@ -4,6 +4,9 @@ import { Canvas, ThreeEvent, useFrame, useThree } from '@react-three/fiber';
 import { PerspectiveCamera, Center, Environment, OrbitControls, Edges } from '@react-three/drei';
 import * as THREE from 'three';
 import { Vec3, Mesh, makeShapeMesh, ShapeId } from './core';
+import { AntipodalColorPicker } from './app/ui/AntipodalColorPicker';
+import { getAntipodalColor } from './app/ui/colorUtils';
+import { FiberBundles } from './app/rendering/FiberBundle';
 
 // --- Semantic Constants ---
 const THEME_DARK = "#2D3436";
@@ -301,7 +304,35 @@ const App: React.FC = () => {
   const [halfAngle, setHalfAngle] = useState(0.4);
   const [currentDir, setCurrentDir] = useState<Vec3>([0, 1, 0]);
   const [uColor, setUColor] = useState("#00e5bc");
-  const [negUColor, setNegUColor] = useState("#6366f1");
+
+  // Antipodal color is always computed from uColor
+  const negUColor = useMemo(() => getAntipodalColor(uColor), [uColor]);
+
+  // Fiber bundles state - tracks visualizations of π⁻¹([u])
+  const [fiberBundles, setFiberBundles] = useState<Array<{
+    quotientPoint: Vec3;
+    representatives: [Vec3, Vec3];
+    colors: [string, string];
+    timestamp: number;
+  }>>([]);
+
+  // Callback when clicking quotient sphere
+  const handleQuotientClick = useCallback((dir: Vec3) => {
+    // Update current direction
+    setCurrentDir(dir);
+
+    // Create fiber bundle visualization
+    const negDir: Vec3 = [-dir[0], -dir[1], -dir[2]];
+    setFiberBundles(prev => [
+      ...prev,
+      {
+        quotientPoint: dir,
+        representatives: [dir, negDir],
+        colors: [uColor, negUColor],
+        timestamp: Date.now()
+      }
+    ]);
+  }, [uColor, negUColor]);
 
   const meshData = useMemo(() => makeShapeMesh(shapeId, 64), [shapeId]);
 
@@ -363,13 +394,14 @@ const App: React.FC = () => {
               <ambientLight intensity={0.5} />
               <pointLight position={[10, 10, 10]} intensity={1} />
               <Center>
-                <SelectorInstrument 
-                  direction={currentDir} 
-                  angle={halfAngle} 
+                <SelectorInstrument
+                  direction={currentDir}
+                  angle={halfAngle}
                   uColor={uColor}
                   negUColor={negUColor}
-                  onUpdate={setCurrentDir} 
+                  onUpdate={handleQuotientClick}
                 />
+                <FiberBundles bundles={fiberBundles} maxBundles={5} />
               </Center>
             </Canvas>
           </section>
@@ -410,24 +442,21 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-             <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Representative Colors</label>
-             <div className="flex items-center gap-3">
-                <input 
-                  type="color" value={uColor} onChange={e => setUColor(e.target.value)}
-                  className="w-8 h-8 rounded-lg cursor-pointer border-none bg-transparent shadow-sm"
-                />
-                <input 
-                  type="color" value={negUColor} onChange={e => setNegUColor(e.target.value)}
-                  className="w-8 h-8 rounded-lg cursor-pointer border-none bg-transparent shadow-sm"
-                />
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">[u] ∈ ℝP²</span>
-             </div>
-          </div>
+          <AntipodalColorPicker
+            primaryColor={uColor}
+            onPrimaryColorChange={setUColor}
+            labels={{ primary: 'u', antipodal: '−u' }}
+            showHint={true}
+          />
 
           <div className="flex justify-end items-center">
-            <button 
-              onClick={() => { setCurrentDir([0,1,0]); setHalfAngle(0.4); setUColor("#00e5bc"); setNegUColor("#6366f1"); }}
+            <button
+              onClick={() => {
+                setCurrentDir([0,1,0]);
+                setHalfAngle(0.4);
+                setUColor("#00e5bc");
+                setFiberBundles([]);
+              }}
               className="px-8 py-3 bg-slate-800 text-white font-black text-[9px] uppercase rounded-full hover:bg-slate-700 transition-all shadow-lg active:scale-95"
             >
               Recalibrate
