@@ -1,7 +1,5 @@
-# SEAM
+# SEAM  
 ## Quotient Symmetry in Information Geometry
-
-![Tests](https://github.com/MacMayo1993/SEAM-VIZ/actions/workflows/test.yml/badge.svg)
 
 **Stochastic Eversion of Antipodal Manifolds**
 
@@ -244,45 +242,6 @@ Goal: Turn SEAM into a full learning instrument.
 > **SEAM is not a shape viewer.  
 > It is an instrument that applies a rule.  
 > Non-orientability is not chosen — it is discovered.**
-
----
-
-## Development & Testing
-
-### Running the Application
-
-```bash
-npm install    # Install dependencies
-npm run dev    # Start development server
-npm run build  # Build for production
-```
-
-### Test Suite
-
-SEAM includes a comprehensive test suite with **266 tests** covering:
-
-- **Core mathematical operations** (213 tests)
-  - Vector operations (Vec3 namespace)
-  - Quotient space operations (ℝP²)
-  - Geometric transformations (matrices, quaternions, rotations)
-  - Parity tracking (ℤ₂ group)
-
-- **Application layer** (53 tests)
-  - Color utilities and antipodal color computation
-
-- **Integration tests** (11 tests)
-  - Module interactions and end-to-end flows
-
-```bash
-npm test              # Run tests in watch mode
-npm run test:run      # Run tests once
-npm run test:ui       # Open Vitest UI
-npm run test:coverage # Generate coverage report
-```
-
-All tests run automatically on GitHub Actions for every push and pull request.
-
-See [`__tests__/README.md`](./__tests__/README.md) for detailed test documentation.
 
 ---
 
