@@ -8,6 +8,9 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 3000,
         host: '0.0.0.0',
+        fs: {
+          allow: [path.join(__dirname, 'node_modules/cesium/Build/Cesium')],
+        },
       },
       plugins: [react()],
       define: {
@@ -18,6 +21,22 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
-      }
+      },
+      optimizeDeps: {
+        esbuildOptions: {
+          define: {
+            global: 'globalThis',
+          },
+        },
+      },
+      build: {
+        rollupOptions: {
+          output: {
+            manualChunks: {
+              cesium: ['cesium'],
+            },
+          },
+        },
+      },
     };
 });
