@@ -9,7 +9,11 @@ export default defineConfig(({ mode }) => {
         port: 3000,
         host: '0.0.0.0',
         fs: {
-          allow: [path.join(__dirname, 'node_modules/cesium/Build/Cesium')],
+          allow: [
+            path.resolve(__dirname, '..'),  // Allow workspace root
+            path.resolve(__dirname),         // Allow project root
+            path.join(__dirname, 'node_modules/cesium/Build/Cesium')
+          ],
         },
       },
       plugins: [react()],
