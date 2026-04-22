@@ -14,7 +14,7 @@ SEAM shows this process explicitly by allowing users to apply **projective ident
 
 This identification is the mathematical foundation from which **non-orientability, seams, and ambiguity** later arise.
 
-**[Live Demo](https://macmayo1993.github.io/seam-viz/)**
+**[Live Demo](https://macmayo1993.github.io/SEAM-VIZ/)**
 
 ---
 
