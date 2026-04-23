@@ -629,13 +629,13 @@ const QuotientSymmetry: React.FC = () => {
   return (
     <div className="flex flex-col min-h-[100dvh] bg-white text-slate-800 font-sans antialiased">
       {/* Universal Technical Header */}
-      <header className="h-14 border-b border-slate-200 flex items-center justify-between px-2 sm:px-6 shrink-0 z-50 bg-white/80 backdrop-blur-md">
-        <div className="flex items-center gap-2 sm:gap-6 min-w-0">
+      <header className="h-auto min-h-14 border-b border-slate-200 flex items-center justify-between px-2 sm:px-6 py-2 sm:py-0 shrink-0 z-50 bg-white/80 backdrop-blur-md">
+        <div className="flex items-center gap-2 sm:gap-6 min-w-0 overflow-hidden">
           <Link to="/" className="text-slate-950 font-black tracking-tighter flex items-center gap-1 sm:gap-2 text-sm hover:opacity-75 transition-opacity shrink-0">
-            <Icon.Laboratory /> <span className="hidden sm:inline">SEAM-VIZ</span><span className="sm:hidden">SV</span>
+            <Icon.Laboratory /> <span>SEAM-VIZ</span>
           </Link>
           <span className="h-4 w-px bg-slate-200 hidden sm:block" />
-          <nav className="flex gap-1 sm:gap-2 min-w-0">
+          <nav className="flex gap-1 sm:gap-2 min-w-0 overflow-x-auto pr-1">
             {[
               { id: 'lab' as const, label: 'Laboratory', icon: <Icon.Laboratory /> },
               { id: 'analytics' as const, label: 'Analytics', icon: <Icon.Analytics /> },
@@ -644,7 +644,7 @@ const QuotientSymmetry: React.FC = () => {
               <button
                 key={btn.id}
                 onClick={() => setPage(btn.id)}
-                className={`px-2 sm:px-4 py-1.5 rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-wide sm:tracking-widest transition-all whitespace-nowrap ${page === btn.id ? 'bg-slate-100 text-slate-900 shadow-inner' : 'text-slate-400 hover:text-slate-600'}`}
+                className={`px-2 sm:px-4 py-1.5 rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-wide sm:tracking-widest transition-all whitespace-nowrap shrink-0 ${page === btn.id ? 'bg-slate-100 text-slate-900 shadow-inner' : 'text-slate-400 hover:text-slate-600'}`}
               >
                 {btn.label}
               </button>
@@ -682,7 +682,7 @@ const QuotientSymmetry: React.FC = () => {
             <div className="flex-1 flex flex-col md:flex-row p-2 gap-2 sm:p-8 sm:gap-8 overflow-visible md:overflow-hidden">
               {/* Object Space */}
               <section className="h-[280px] sm:h-[340px] md:h-auto flex-1 relative rounded-[2.5rem] bg-white/40 border border-white/50 overflow-hidden shadow-inner">
-                <div className="absolute top-8 left-10 z-10 pointer-events-none">
+                <div className="absolute top-4 left-4 sm:top-8 sm:left-10 z-10 pointer-events-none max-w-[70%]">
                   <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em]">{leftPanelTitle}</h2>
                   <p className="text-[8px] text-slate-300 mt-1">Double-Cover Space (S²)</p>
                 </div>
@@ -710,7 +710,7 @@ const QuotientSymmetry: React.FC = () => {
 
               {/* Projective Selector */}
               <section className="h-[280px] sm:h-[340px] md:h-auto flex-1 relative rounded-[2.5rem] bg-white shadow-xl overflow-hidden border border-slate-100/50">
-                <div className="absolute top-8 right-10 z-10 text-right pointer-events-none">
+                <div className="absolute top-4 right-4 sm:top-8 sm:right-10 z-10 text-right pointer-events-none max-w-[75%]">
                   <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em]">Quotient Manifold (ℝP²)</h2>
                   <div className="flex flex-col gap-1 mt-2">
                     <span className="text-[9px] font-bold text-slate-300 uppercase italic">Map: π(x) ≡ π(−x)</span>
