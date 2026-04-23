@@ -668,12 +668,12 @@ const QuotientSymmetry: React.FC = () => {
           </nav>
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 sm:gap-6">
           <div className="flex items-center gap-2 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
              <div className={`w-1.5 h-1.5 rounded-full ${driveMode ? 'bg-blue-600 animate-pulse shadow-[0_0_8px_rgba(37,99,235,0.5)]' : 'bg-slate-300'}`} />
              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{driveMode ? 'Capturing' : 'Standby'}</span>
           </div>
-          <div className="text-[10px] font-mono font-bold text-slate-300">MOD: RP2_PROJ</div>
+          <div className="text-[10px] font-mono font-bold text-slate-300 hidden sm:block">MOD: RP2_PROJ</div>
         </div>
       </header>
 
@@ -682,20 +682,20 @@ const QuotientSymmetry: React.FC = () => {
         {/* Laboratory View - The Core Visualization */}
         {page === 'lab' && (
           <div className="flex-1 flex flex-col relative bg-slate-50/50 overflow-hidden">
-            <div className="flex justify-between items-start mb-8 px-8 pt-8">
+            <div className="flex justify-between items-start mb-4 px-4 pt-4 sm:mb-8 sm:px-8 sm:pt-8">
               <div className="text-left">
-                <h2 className="text-xl font-bold text-slate-900 tracking-tight">Manifold Mapping Laboratory</h2>
-                <p className="text-xs text-slate-500 mt-1 uppercase tracking-widest font-medium">Real-time projective identification: S² → ℝP²</p>
+                <h2 className="text-base sm:text-xl font-bold text-slate-900 tracking-tight">Manifold Mapping Laboratory</h2>
+                <p className="text-xs text-slate-500 mt-1 uppercase tracking-widest font-medium hidden sm:block">Real-time projective identification: S² → ℝP²</p>
               </div>
               <button
                 onClick={() => setDriveMode(!driveMode)}
-                className={`px-6 py-2 rounded text-[11px] font-bold uppercase border transition-all ${driveMode ? 'bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-900/10' : 'bg-white text-slate-700 border-slate-300 hover:border-slate-900'}`}
+                className={`px-3 py-2 sm:px-6 rounded text-[11px] font-bold uppercase border transition-all ${driveMode ? 'bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-900/10' : 'bg-white text-slate-700 border-slate-300 hover:border-slate-900'}`}
               >
-                {driveMode ? 'Halt Trace' : 'Initialize Geodesic Trace'}
+                {driveMode ? 'Halt' : 'Trace'}
               </button>
             </div>
 
-            <div className="flex-1 flex flex-col md:flex-row p-8 gap-8 overflow-hidden">
+            <div className="flex-1 flex flex-col md:flex-row p-2 gap-2 sm:p-8 sm:gap-8 overflow-hidden">
               {/* Object Space */}
               <section className="flex-1 relative rounded-[2.5rem] bg-white/40 border border-white/50 overflow-hidden shadow-inner">
                 <div className="absolute top-8 left-10 z-10 pointer-events-none">
@@ -738,7 +738,8 @@ const QuotientSymmetry: React.FC = () => {
                   <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none">
                     <div className="bg-black/80 text-white px-6 py-3 rounded-lg text-center backdrop-blur-sm">
                       <div className="text-sm font-bold mb-1">DRIVE MODE ACTIVE</div>
-                      <div className="text-xs opacity-75">WASD: Navigate | ESC: Exit</div>
+                      <div className="text-xs opacity-75 hidden sm:block">WASD: Navigate | ESC: Exit</div>
+                      <div className="text-xs opacity-75 sm:hidden">Drag to navigate | Tap Halt to exit</div>
                     </div>
                   </div>
                 )}
@@ -777,14 +778,14 @@ const QuotientSymmetry: React.FC = () => {
             </div>
 
             {/* Metric Bar Overlay */}
-            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-white border border-slate-200 rounded-lg shadow-2xl flex divide-x divide-slate-100 overflow-hidden z-10">
+            <div className="absolute bottom-4 sm:bottom-10 left-1/2 -translate-x-1/2 bg-white border border-slate-200 rounded-lg shadow-2xl flex divide-x divide-slate-100 overflow-x-auto max-w-[calc(100vw-2rem)] z-10">
               {[
                 { label: 'Map', val: 'π(x) ≡ π(−x)' },
                 { label: 'Parity', val: shapeId, col: 'text-blue-600' },
-                { label: 'Boundary', val: 'ℤ₂ Seam' },
-                { label: 'k*', val: '0.721347' }
+                { label: 'Boundary', val: 'ℤ₂ Seam', hideOnMobile: true },
+                { label: 'k*', val: '0.721347', hideOnMobile: true }
               ].map((m, i) => (
-                <div key={i} className="px-10 py-4 flex flex-col items-center min-w-[160px]">
+                <div key={i} className={`px-4 sm:px-10 py-3 sm:py-4 flex flex-col items-center min-w-[80px] sm:min-w-[160px] shrink-0${m.hideOnMobile ? ' hidden sm:flex' : ''}`}>
                   <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">{m.label}</span>
                   <span className={`text-xs font-mono font-bold ${m.col || 'text-slate-900'}`}>{m.val}</span>
                 </div>
@@ -803,7 +804,7 @@ const QuotientSymmetry: React.FC = () => {
 
         {/* Controls Footer - Only shown in Laboratory view */}
         {page === 'lab' && (
-          <footer className="px-14 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-center border-t border-slate-200/40 bg-white/90 backdrop-blur-md z-20">
+          <footer className="px-4 sm:px-14 py-4 sm:py-6 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 items-center border-t border-slate-200/40 bg-white/90 backdrop-blur-md z-20">
             <div className="flex flex-col gap-2">
               <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Base Geometry</label>
               <select
