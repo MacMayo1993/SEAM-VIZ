@@ -468,22 +468,6 @@ const LibraryView = () => (
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold text-slate-900 mb-4">The k* Constant and Information Geometry</h2>
-          <p className="mb-4">
-            From Minimum Description Length theory and Kolmogorov complexity, we derive a candidate universal constant:
-          </p>
-          <div className="p-6 bg-amber-50 rounded-xl border border-amber-200 mb-4 text-center">
-            <p className="text-2xl font-mono font-bold text-amber-900">k* = 1/(2 ln 2) ≈ 0.721347520...</p>
-            <p className="text-sm text-amber-700 mt-2">The exchange rate between questions and answers</p>
-          </div>
-          <p className="mb-4">
-            This constant governs the <strong>information geometry</strong> of the quotient operation. When we
-            collapse u and −u into a single equivalence class, we're trading one bit of orientation information
-            for topological structure. The constant k* quantifies this exchange.
-          </p>
-        </section>
-
-        <section>
           <h2 className="text-2xl font-bold text-slate-900 mb-4">Drive Mode: Navigating the Quotient</h2>
           <p className="mb-4">
             The <strong>Drive Mode</strong> allows continuous navigation through the quotient space, making
@@ -643,7 +627,7 @@ const QuotientSymmetry: React.FC = () => {
   }, [shapeId]);
 
   return (
-    <div className="flex flex-col h-screen bg-white text-slate-800 font-sans antialiased">
+    <div className="flex flex-col min-h-[100dvh] bg-white text-slate-800 font-sans antialiased">
       {/* Universal Technical Header */}
       <header className="h-14 border-b border-slate-200 flex items-center justify-between px-6 shrink-0 z-50 bg-white/80 backdrop-blur-md">
         <div className="flex items-center gap-6">
@@ -660,7 +644,7 @@ const QuotientSymmetry: React.FC = () => {
               <button
                 key={btn.id}
                 onClick={() => setPage(btn.id)}
-                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${page === btn.id ? 'bg-slate-100 text-slate-900 shadow-inner' : 'text-slate-400 hover:text-slate-600'}`}
+                className={`px-2 sm:px-4 py-1.5 rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all ${page === btn.id ? 'bg-slate-100 text-slate-900 shadow-inner' : 'text-slate-400 hover:text-slate-600'}`}
               >
                 {btn.label}
               </button>
@@ -673,7 +657,7 @@ const QuotientSymmetry: React.FC = () => {
              <div className={`w-1.5 h-1.5 rounded-full ${driveMode ? 'bg-blue-600 animate-pulse shadow-[0_0_8px_rgba(37,99,235,0.5)]' : 'bg-slate-300'}`} />
              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{driveMode ? 'Capturing' : 'Standby'}</span>
           </div>
-          <div className="text-[10px] font-mono font-bold text-slate-300 hidden sm:block">MOD: RP2_PROJ</div>
+          <div className="text-[10px] font-mono font-bold text-slate-300 hidden md:block">MOD: RP2_PROJ</div>
         </div>
       </header>
 
@@ -782,8 +766,7 @@ const QuotientSymmetry: React.FC = () => {
               {[
                 { label: 'Map', val: 'π(x) ≡ π(−x)' },
                 { label: 'Parity', val: shapeId, col: 'text-blue-600' },
-                { label: 'Boundary', val: 'ℤ₂ Seam', hideOnMobile: true },
-                { label: 'k*', val: '0.721347', hideOnMobile: true }
+                { label: 'Boundary', val: 'ℤ₂ Seam', hideOnMobile: true }
               ].map((m, i) => (
                 <div key={i} className={`px-4 sm:px-10 py-3 sm:py-4 flex flex-col items-center min-w-[80px] sm:min-w-[160px] shrink-0${m.hideOnMobile ? ' hidden sm:flex' : ''}`}>
                   <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">{m.label}</span>
@@ -876,11 +859,10 @@ const QuotientSymmetry: React.FC = () => {
       </main>
 
       {/* Telemetry Footer */}
-      <footer className="h-10 border-t border-slate-100 bg-slate-50 flex items-center px-6 justify-between text-[10px] font-bold text-slate-400 tracking-tight uppercase">
+      <footer className="h-10 border-t border-slate-100 bg-slate-50 hidden md:flex items-center px-6 justify-between text-[10px] font-bold text-slate-400 tracking-tight uppercase">
         <div className="flex gap-10 items-center">
           <span className="flex items-center gap-2 text-blue-600"><Icon.Pulse /> System Active</span>
           <span className="opacity-60">Invariant: w₁ Checked</span>
-          <span className="opacity-60 font-mono">k* = 0.721</span>
         </div>
         <div className="flex gap-8 items-center">
            <span className="font-mono text-slate-300 lowercase">path: [x, -x] ⊂ ℝP²</span>
