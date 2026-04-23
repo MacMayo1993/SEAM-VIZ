@@ -5,7 +5,7 @@ import QuotientSymmetry from './components/QuotientSymmetry';
 
 function App() {
   return (
-    <div className="app-container" style={{ height: '100vh', width: '100vw' }}>
+    <div className="app-container" style={{ minHeight: '100dvh', width: '100vw' }}>
       <Routes>
         <Route path="/" element={<StartMenu />} />
         <Route path="/tutorials" element={<Tutorials />} />
