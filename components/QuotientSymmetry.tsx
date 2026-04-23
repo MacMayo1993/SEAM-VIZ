@@ -762,7 +762,7 @@ const QuotientSymmetry: React.FC = () => {
             </div>
 
             {/* Metric Bar Overlay */}
-            <div className="relative md:absolute mt-2 md:mt-0 left-0 md:left-1/2 md:bottom-4 lg:bottom-10 md:-translate-x-1/2 bg-white border border-slate-200 rounded-lg shadow-xl md:shadow-2xl flex divide-x divide-slate-100 overflow-x-auto max-w-[calc(100vw-1rem)] md:max-w-[calc(100vw-2rem)] z-10 mx-auto">
+            <div className="relative md:absolute mt-2 md:mt-0 left-0 md:left-1/2 md:bottom-4 lg:bottom-10 md:-translate-x-1/2 bg-white border border-slate-200 rounded-lg shadow-xl md:shadow-2xl flex divide-x divide-slate-100 overflow-x-auto max-w-[calc(100vw-1rem)] md:max-w-[calc(100vw-2rem)] z-10 mx-auto md:mx-0">
               {[
                 { label: 'Map', val: 'π(x) ≡ π(−x)' },
                 { label: 'Parity', val: shapeId, col: 'text-blue-600' },
