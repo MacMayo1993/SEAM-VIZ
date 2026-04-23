@@ -468,22 +468,6 @@ const LibraryView = () => (
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold text-slate-900 mb-4">The k* Constant and Information Geometry</h2>
-          <p className="mb-4">
-            From Minimum Description Length theory and Kolmogorov complexity, we derive a candidate universal constant:
-          </p>
-          <div className="p-6 bg-amber-50 rounded-xl border border-amber-200 mb-4 text-center">
-            <p className="text-2xl font-mono font-bold text-amber-900">k* = 1/(2 ln 2) ≈ 0.721347520...</p>
-            <p className="text-sm text-amber-700 mt-2">The exchange rate between questions and answers</p>
-          </div>
-          <p className="mb-4">
-            This constant governs the <strong>information geometry</strong> of the quotient operation. When we
-            collapse u and −u into a single equivalence class, we're trading one bit of orientation information
-            for topological structure. The constant k* quantifies this exchange.
-          </p>
-        </section>
-
-        <section>
           <h2 className="text-2xl font-bold text-slate-900 mb-4">Drive Mode: Navigating the Quotient</h2>
           <p className="mb-4">
             The <strong>Drive Mode</strong> allows continuous navigation through the quotient space, making
@@ -643,15 +627,15 @@ const QuotientSymmetry: React.FC = () => {
   }, [shapeId]);
 
   return (
-    <div className="flex flex-col h-screen bg-white text-slate-800 font-sans antialiased">
+    <div className="flex flex-col min-h-[100dvh] bg-white text-slate-800 font-sans antialiased">
       {/* Universal Technical Header */}
-      <header className="h-14 border-b border-slate-200 flex items-center justify-between px-6 shrink-0 z-50 bg-white/80 backdrop-blur-md">
-        <div className="flex items-center gap-6">
-          <Link to="/" className="text-slate-950 font-black tracking-tighter flex items-center gap-2 text-sm hover:opacity-75 transition-opacity">
-            <Icon.Laboratory /> SEAM-VIZ
+      <header className="h-14 border-b border-slate-200 flex items-center justify-between px-2 sm:px-6 shrink-0 z-50 bg-white/80 backdrop-blur-md">
+        <div className="flex items-center gap-2 sm:gap-6 min-w-0">
+          <Link to="/" className="text-slate-950 font-black tracking-tighter flex items-center gap-1 sm:gap-2 text-sm hover:opacity-75 transition-opacity shrink-0">
+            <Icon.Laboratory /> <span className="hidden sm:inline">SEAM-VIZ</span><span className="sm:hidden">SV</span>
           </Link>
-          <span className="h-4 w-px bg-slate-200" />
-          <nav className="flex gap-2">
+          <span className="h-4 w-px bg-slate-200 hidden sm:block" />
+          <nav className="flex gap-1 sm:gap-2 min-w-0">
             {[
               { id: 'lab' as const, label: 'Laboratory', icon: <Icon.Laboratory /> },
               { id: 'analytics' as const, label: 'Analytics', icon: <Icon.Analytics /> },
@@ -660,7 +644,7 @@ const QuotientSymmetry: React.FC = () => {
               <button
                 key={btn.id}
                 onClick={() => setPage(btn.id)}
-                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${page === btn.id ? 'bg-slate-100 text-slate-900 shadow-inner' : 'text-slate-400 hover:text-slate-600'}`}
+                className={`px-2 sm:px-4 py-1.5 rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-wide sm:tracking-widest transition-all whitespace-nowrap ${page === btn.id ? 'bg-slate-100 text-slate-900 shadow-inner' : 'text-slate-400 hover:text-slate-600'}`}
               >
                 {btn.label}
               </button>
@@ -668,20 +652,20 @@ const QuotientSymmetry: React.FC = () => {
           </nav>
         </div>
 
-        <div className="flex items-center gap-3 sm:gap-6">
+        <div className="items-center gap-3 sm:gap-6 hidden sm:flex">
           <div className="flex items-center gap-2 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
              <div className={`w-1.5 h-1.5 rounded-full ${driveMode ? 'bg-blue-600 animate-pulse shadow-[0_0_8px_rgba(37,99,235,0.5)]' : 'bg-slate-300'}`} />
              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{driveMode ? 'Capturing' : 'Standby'}</span>
           </div>
-          <div className="text-[10px] font-mono font-bold text-slate-300 hidden sm:block">MOD: RP2_PROJ</div>
+          <div className="text-[10px] font-mono font-bold text-slate-300 hidden md:block">MOD: RP2_PROJ</div>
         </div>
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 overflow-hidden flex flex-col">
+      <main className="flex-1 overflow-y-auto md:overflow-hidden flex flex-col">
         {/* Laboratory View - The Core Visualization */}
         {page === 'lab' && (
-          <div className="flex-1 flex flex-col relative bg-slate-50/50 overflow-hidden">
+          <div className="flex-1 flex flex-col relative bg-slate-50/50 overflow-visible md:overflow-hidden">
             <div className="flex justify-between items-start mb-4 px-4 pt-4 sm:mb-8 sm:px-8 sm:pt-8">
               <div className="text-left">
                 <h2 className="text-base sm:text-xl font-bold text-slate-900 tracking-tight">Manifold Mapping Laboratory</h2>
@@ -695,9 +679,9 @@ const QuotientSymmetry: React.FC = () => {
               </button>
             </div>
 
-            <div className="flex-1 flex flex-col md:flex-row p-2 gap-2 sm:p-8 sm:gap-8 overflow-hidden">
+            <div className="flex-1 flex flex-col md:flex-row p-2 gap-2 sm:p-8 sm:gap-8 overflow-visible md:overflow-hidden">
               {/* Object Space */}
-              <section className="flex-1 relative rounded-[2.5rem] bg-white/40 border border-white/50 overflow-hidden shadow-inner">
+              <section className="h-[280px] sm:h-[340px] md:h-auto flex-1 relative rounded-[2.5rem] bg-white/40 border border-white/50 overflow-hidden shadow-inner">
                 <div className="absolute top-8 left-10 z-10 pointer-events-none">
                   <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em]">{leftPanelTitle}</h2>
                   <p className="text-[8px] text-slate-300 mt-1">Double-Cover Space (S²)</p>
@@ -725,7 +709,7 @@ const QuotientSymmetry: React.FC = () => {
               </section>
 
               {/* Projective Selector */}
-              <section className="flex-1 relative rounded-[2.5rem] bg-white shadow-xl overflow-hidden border border-slate-100/50">
+              <section className="h-[280px] sm:h-[340px] md:h-auto flex-1 relative rounded-[2.5rem] bg-white shadow-xl overflow-hidden border border-slate-100/50">
                 <div className="absolute top-8 right-10 z-10 text-right pointer-events-none">
                   <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em]">Quotient Manifold (ℝP²)</h2>
                   <div className="flex flex-col gap-1 mt-2">
@@ -778,12 +762,11 @@ const QuotientSymmetry: React.FC = () => {
             </div>
 
             {/* Metric Bar Overlay */}
-            <div className="absolute bottom-4 sm:bottom-10 left-1/2 -translate-x-1/2 bg-white border border-slate-200 rounded-lg shadow-2xl flex divide-x divide-slate-100 overflow-x-auto max-w-[calc(100vw-2rem)] z-10">
+            <div className="relative md:absolute mt-2 md:mt-0 md:bottom-4 lg:bottom-10 left-1/2 md:-translate-x-1/2 bg-white border border-slate-200 rounded-lg shadow-xl md:shadow-2xl flex divide-x divide-slate-100 overflow-x-auto max-w-[calc(100vw-1rem)] md:max-w-[calc(100vw-2rem)] z-10 mx-auto">
               {[
                 { label: 'Map', val: 'π(x) ≡ π(−x)' },
                 { label: 'Parity', val: shapeId, col: 'text-blue-600' },
-                { label: 'Boundary', val: 'ℤ₂ Seam', hideOnMobile: true },
-                { label: 'k*', val: '0.721347', hideOnMobile: true }
+                { label: 'Boundary', val: 'ℤ₂ Seam', hideOnMobile: true }
               ].map((m, i) => (
                 <div key={i} className={`px-4 sm:px-10 py-3 sm:py-4 flex flex-col items-center min-w-[80px] sm:min-w-[160px] shrink-0${m.hideOnMobile ? ' hidden sm:flex' : ''}`}>
                   <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">{m.label}</span>
@@ -804,7 +787,7 @@ const QuotientSymmetry: React.FC = () => {
 
         {/* Controls Footer - Only shown in Laboratory view */}
         {page === 'lab' && (
-          <footer className="px-4 sm:px-14 py-4 sm:py-6 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 items-center border-t border-slate-200/40 bg-white/90 backdrop-blur-md z-20">
+          <footer className="px-4 sm:px-14 py-4 sm:py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 items-center border-t border-slate-200/40 bg-white/90 backdrop-blur-md z-20">
             <div className="flex flex-col gap-2">
               <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Base Geometry</label>
               <select
@@ -857,7 +840,7 @@ const QuotientSymmetry: React.FC = () => {
               showHint={true}
             />
 
-            <div className="flex justify-end items-center">
+            <div className="flex md:justify-end items-center">
               <button
                 onClick={() => {
                   setCurrentDir([0,1,0]);
@@ -866,7 +849,7 @@ const QuotientSymmetry: React.FC = () => {
                   setFiberBundles([]);
                   addTelemetry("RESET", "System recalibrated to default state");
                 }}
-                className="px-8 py-3 bg-slate-800 text-white font-black text-[9px] uppercase rounded-full hover:bg-slate-700 transition-all shadow-lg active:scale-95"
+                className="w-full md:w-auto px-8 py-3 bg-slate-800 text-white font-black text-[9px] uppercase rounded-full hover:bg-slate-700 transition-all shadow-lg active:scale-95"
               >
                 Recalibrate
               </button>
@@ -876,11 +859,10 @@ const QuotientSymmetry: React.FC = () => {
       </main>
 
       {/* Telemetry Footer */}
-      <footer className="h-10 border-t border-slate-100 bg-slate-50 flex items-center px-6 justify-between text-[10px] font-bold text-slate-400 tracking-tight uppercase">
+      <footer className="h-10 border-t border-slate-100 bg-slate-50 hidden md:flex items-center px-6 justify-between text-[10px] font-bold text-slate-400 tracking-tight uppercase">
         <div className="flex gap-10 items-center">
           <span className="flex items-center gap-2 text-blue-600"><Icon.Pulse /> System Active</span>
           <span className="opacity-60">Invariant: w₁ Checked</span>
-          <span className="opacity-60 font-mono">k* = 0.721</span>
         </div>
         <div className="flex gap-8 items-center">
            <span className="font-mono text-slate-300 lowercase">path: [x, -x] ⊂ ℝP²</span>
