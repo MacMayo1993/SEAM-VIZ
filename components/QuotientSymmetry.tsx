@@ -738,9 +738,6 @@ const QuotientSymmetry: React.FC = () => {
       { dir: negDir, color: negUColor, id: stampId + 1 }
     ]);
 
-    // Aperture-sized cap stamp on the state space
-    setStampCaps(prev => [...prev, { dir, aperture: halfAngle, uColor, negUColor, id: stampId + 2 }]);
-
     // Create a fiber visualization at the clicked equivalence class
     setFiberBundles(prev => [
       ...prev.slice(-(MAX_FIBER_BUNDLES - 1)),
@@ -751,7 +748,7 @@ const QuotientSymmetry: React.FC = () => {
         timestamp: stampId
       }
     ]);
-  }, [uColor, negUColor, halfAngle, addTelemetry]);
+  }, [uColor, negUColor, addTelemetry]);
 
   // Manual stamp at current direction/aperture (for the Stamp button)
   const addStamp = useCallback(() => {

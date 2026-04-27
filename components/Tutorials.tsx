@@ -55,9 +55,10 @@ const Tutorials: React.FC = () => {
 
   return (
     <div style={{
-      minHeight: '100vh',
+      height: '100dvh',
       display: 'flex',
       flexDirection: 'column',
+      overflow: 'hidden',
       background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
       color: 'white',
       position: 'relative',
@@ -65,22 +66,22 @@ const Tutorials: React.FC = () => {
 
       {/* Header Navigation */}
       <nav style={{
-        padding: '20px 40px',
+        padding: '16px 24px',
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
         backdropFilter: 'blur(10px)',
         borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        position: 'sticky',
-        top: 0,
-        zIndex: 1000,
+        flexShrink: 0,
+        zIndex: 10,
       }}>
         <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 'bold', marginBottom: '0.25rem', letterSpacing: '0.15em' }}>
+          <h1 style={{ fontSize: 'clamp(1rem, 4vw, 1.75rem)', fontWeight: 'bold', marginBottom: '0.25rem', letterSpacing: '0.1em' }}>
             SEAM VIZ TUTORIAL
           </h1>
-          <p style={{ fontSize: '0.75rem', opacity: 0.7, fontStyle: 'italic' }}>
+          <p style={{ fontSize: 'clamp(0.65rem, 2vw, 0.75rem)', opacity: 0.7, fontStyle: 'italic', display: 'none' }}
+             className="sm:block">
             Learning Through Play: Topology, Quotient Spaces, and Projective Geometry
           </p>
         </div>
@@ -105,10 +106,11 @@ const Tutorials: React.FC = () => {
       <div style={{
         display: 'flex',
         justifyContent: 'center',
-        gap: '10px',
-        padding: '20px',
+        gap: '8px',
+        padding: '12px 16px',
         backgroundColor: 'rgba(0, 0, 0, 0.3)',
         flexWrap: 'wrap',
+        flexShrink: 0,
       }}>
         {sections.map((section) => (
           <button
@@ -135,13 +137,16 @@ const Tutorials: React.FC = () => {
         ))}
       </div>
 
-      {/* Main Content Area */}
+      {/* Main Content Area — sole scroll container */}
       <main style={{
         flex: 1,
-        padding: '40px',
+        minHeight: 0,
+        overflowY: 'auto',
+        padding: 'clamp(20px, 5vw, 40px)',
         maxWidth: '1200px',
         width: '100%',
         margin: '0 auto',
+        boxSizing: 'border-box',
       }}>
 
         {/* Introduction Section */}
@@ -840,17 +845,18 @@ const Tutorials: React.FC = () => {
 
       </main>
 
-      {/* Footer Navigation */}
+      {/* Footer Navigation — pinned */}
       <footer style={{
-        padding: '25px 40px',
+        padding: '16px 24px',
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
         backdropFilter: 'blur(10px)',
         borderTop: '1px solid rgba(255, 255, 255, 0.1)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        gap: '20px',
+        gap: '12px',
         flexWrap: 'wrap',
+        flexShrink: 0,
       }}>
         <button
           onClick={handlePrev}
