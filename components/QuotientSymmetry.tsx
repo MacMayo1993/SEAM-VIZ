@@ -7,7 +7,7 @@ import { Vec3, Mesh, makeShapeMesh, ShapeId } from '../core';
 import { AntipodalColorPicker } from '../app/ui/AntipodalColorPicker';
 import { getAntipodalColor } from '../app/ui/colorUtils';
 import { FiberBundles } from '../app/rendering/FiberBundle';
-import { updatePositionFromWASD, type WASDState } from '../app/ui/sphericalNavigation';
+import { updatePositionFromWASD, moveOnSphere, type WASDState } from '../app/ui/sphericalNavigation';
 import { Link } from 'react-router-dom';
 
 // --- Semantic Constants ---
@@ -305,21 +305,29 @@ const SelectorInstrument = ({
 
 const StampedDirections = ({
   stamps,
-  radius
+  meshData,
 }: {
   stamps: Array<{ dir: Vec3; color: string; id: number }>;
-  radius: number;
-}) => (
-  <group>
-    {stamps.map((stamp) => {
-      const n = Vec3.normalize(stamp.dir);
-      return (
-        <mesh
-          key={stamp.id}
-          position={[n[0] * radius, n[1] * radius, n[2] * radius]}
-          renderOrder={30}
-        >
-          <sphereGeometry args={[Math.max(0.025, radius * 0.03), 18, 18]} />
+  meshData: Mesh;
+}) => {
+  // Project each stamp direction onto the closest vertex on the actual mesh surface
+  // so stamps land on the mesh rather than floating on the bounding sphere.
+  const positions = useMemo<Vec3[]>(() => stamps.map(stamp => {
+    const n = Vec3.normalize(stamp.dir);
+    let bestDot = -Infinity;
+    let bestVert: Vec3 = n;
+    for (const v of meshData.vertices) {
+      const d = Vec3.dot(Vec3.normalize(v), n);
+      if (d > bestDot) { bestDot = d; bestVert = v; }
+    }
+    return Vec3.scale(Vec3.normalize(bestVert), Vec3.norm(bestVert) * 1.04);
+  }), [stamps, meshData]);
+
+  return (
+    <group>
+      {stamps.map((stamp, i) => (
+        <mesh key={stamp.id} position={positions[i]} renderOrder={30}>
+          <sphereGeometry args={[0.035, 16, 16]} />
           <meshStandardMaterial
             color={stamp.color}
             emissive={stamp.color}
@@ -328,10 +336,10 @@ const StampedDirections = ({
             metalness={0.1}
           />
         </mesh>
-      );
-    })}
-  </group>
-);
+      ))}
+    </group>
+  );
+};
 
 const UDirectionMarkers = ({
   direction,
@@ -700,7 +708,36 @@ const QuotientSymmetry: React.FC = () => {
         timestamp: Date.now()
       }
     ]);
-  }, [uColor, negUColor, MAX_FIBER_BUNDLES]);
+  }, [uColor, negUColor]);
+
+  // Ref tracking currentDir for use inside pointer handlers (avoids stale closure)
+  const currentDirRef = useRef<Vec3>(currentDir);
+  useEffect(() => { currentDirRef.current = currentDir; }, [currentDir]);
+
+  // Touch/pointer drag navigation for mobile drive mode
+  const lastDrivePointerRef = useRef<{ x: number; y: number } | null>(null);
+
+  const handleDrivePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    lastDrivePointerRef.current = { x: e.clientX, y: e.clientY };
+    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+  }, []);
+
+  const handleDrivePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (!lastDrivePointerRef.current) return;
+    const dx = e.clientX - lastDrivePointerRef.current.x;
+    const dy = e.clientY - lastDrivePointerRef.current.y;
+    lastDrivePointerRef.current = { x: e.clientX, y: e.clientY };
+    if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return;
+    const speed = 0.006;
+    const newDir = moveOnSphere(currentDirRef.current, dx * speed, dy * speed);
+    currentDirRef.current = newDir;
+    setCurrentDir(newDir);
+    spawnFiberBundle(newDir);
+  }, [spawnFiberBundle]);
+
+  const handleDrivePointerUp = useCallback(() => {
+    lastDrivePointerRef.current = null;
+  }, []);
 
   const meshData = useMemo(() => makeShapeMesh(shapeId, 64), [shapeId]);
   const meshRadius = useMemo(
@@ -791,7 +828,7 @@ const QuotientSymmetry: React.FC = () => {
                         addTelemetry("DIRECTION", `Updated direction to [${dir.map(v => v.toFixed(2)).join(', ')}]`);
                       }}
                     />
-                    <StampedDirections stamps={stamps} radius={meshRadius} />
+                    <StampedDirections stamps={stamps} meshData={meshData} />
                   </Center>
                 </Canvas>
               </section>
@@ -822,13 +859,23 @@ const QuotientSymmetry: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Drive Mode UI Indicator */}
+                {/* Touch/drag capture overlay — intercepts pointer events in drive mode */}
                 {driveMode && (
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none">
-                    <div className="bg-black/80 text-white px-6 py-3 rounded-lg text-center backdrop-blur-sm">
-                      <div className="text-sm font-bold mb-1">DRIVE MODE ACTIVE</div>
-                      <div className="text-xs opacity-75 hidden sm:block">WASD: Navigate | ESC: Exit</div>
-                      <div className="text-xs opacity-75 sm:hidden">Drag to navigate | Tap Halt to exit</div>
+                  <div
+                    className="absolute inset-0 z-20"
+                    style={{ touchAction: 'none' }}
+                    onPointerDown={handleDrivePointerDown}
+                    onPointerMove={handleDrivePointerMove}
+                    onPointerUp={handleDrivePointerUp}
+                    onPointerLeave={handleDrivePointerUp}
+                  />
+                )}
+                {/* Drive mode status badge — small, non-blocking */}
+                {driveMode && (
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+                    <div className="bg-black/65 text-white px-3 py-1.5 rounded-full text-[10px] font-bold backdrop-blur-sm whitespace-nowrap">
+                      <span className="hidden sm:inline">WASD · ESC to exit</span>
+                      <span className="sm:hidden">Drag to navigate · Tap Halt</span>
                     </div>
                   </div>
                 )}
