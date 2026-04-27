@@ -391,6 +391,59 @@ const UDirectionMarkers = ({
   );
 };
 
+interface StampCapData {
+  dir: Vec3;
+  aperture: number;
+  uColor: string;
+  negUColor: string;
+  id: number;
+}
+
+// A single persistent cone cap rendered on the state-space mesh.
+// The geometry is a sphere cap that starts at the "north pole" and is
+// rotated to face `dir`, exactly matching the live cone in the right panel.
+const SphericalCapStamp = ({ dir, aperture, color, radius }: {
+  dir: Vec3;
+  aperture: number;
+  color: string;
+  radius: number;
+}) => {
+  const quaternion = useMemo(() => {
+    const q = new THREE.Quaternion();
+    q.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(...dir).normalize());
+    return q;
+  }, [dir]);
+
+  return (
+    <mesh quaternion={quaternion} renderOrder={26}>
+      <sphereGeometry args={[radius, 48, 24, 0, Math.PI * 2, 0, aperture]} />
+      <meshStandardMaterial
+        color={color}
+        transparent
+        opacity={0.38}
+        side={THREE.DoubleSide}
+        depthWrite={false}
+        emissive={color}
+        emissiveIntensity={0.18}
+      />
+    </mesh>
+  );
+};
+
+const StampCapsLayer = ({ caps, radius }: { caps: StampCapData[]; radius: number }) => (
+  <group>
+    {caps.map(cap => {
+      const negDir = Vec3.neg(Vec3.normalize(cap.dir));
+      return (
+        <React.Fragment key={cap.id}>
+          <SphericalCapStamp dir={cap.dir} aperture={cap.aperture} color={cap.uColor} radius={radius} />
+          <SphericalCapStamp dir={negDir} aperture={cap.aperture} color={cap.negUColor} radius={radius} />
+        </React.Fragment>
+      );
+    })}
+  </group>
+);
+
 const AbstractUIBackground = ({ uColor, negUColor, aperture }: { uColor: string, negUColor: string, aperture: number }) => {
   const glowOpacity = useMemo(() => {
     const normalized = (aperture - 0.05) / (1.5 - 0.05);
@@ -441,7 +494,7 @@ const AnalyticsView = ({ history, fiberCount }: { history: TelemetryEntry[], fib
   }, []);
 
   return (
-    <div className="flex-1 bg-white p-8 overflow-y-auto">
+    <div className="flex-1 min-h-0 bg-white p-8 overflow-y-auto">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <div className="text-blue-600"><Icon.Analytics /></div>
@@ -498,7 +551,7 @@ const AnalyticsView = ({ history, fiberCount }: { history: TelemetryEntry[], fib
 
 // --- View 3: Library (Theory & Abstract) ---
 const LibraryView = () => (
-  <div className="flex-1 bg-white p-12 overflow-y-auto text-left">
+  <div className="flex-1 min-h-0 bg-white p-12 overflow-y-auto text-left">
     <article className="max-w-3xl mx-auto">
       <h1 className="text-4xl font-black tracking-tighter text-slate-900 mb-2">SEAM-VIZ Protocol</h1>
       <p className="text-base font-serif text-slate-500 italic mb-10 border-b border-slate-100 pb-10">
@@ -618,6 +671,7 @@ const QuotientSymmetry: React.FC = () => {
     timestamp: number;
   }>>([]);
   const [stamps, setStamps] = useState<Array<{ dir: Vec3; color: string; id: number }>>([]);
+  const [stampCaps, setStampCaps] = useState<StampCapData[]>([]);
 
   // Telemetry history for Analytics view
   const [telemetryHistory, setTelemetryHistory] = useState<TelemetryEntry[]>([]);
@@ -684,6 +738,9 @@ const QuotientSymmetry: React.FC = () => {
       { dir: negDir, color: negUColor, id: stampId + 1 }
     ]);
 
+    // Aperture-sized cap stamp on the state space
+    setStampCaps(prev => [...prev, { dir, aperture: halfAngle, uColor, negUColor, id: stampId + 2 }]);
+
     // Create a fiber visualization at the clicked equivalence class
     setFiberBundles(prev => [
       ...prev.slice(-(MAX_FIBER_BUNDLES - 1)),
@@ -694,7 +751,14 @@ const QuotientSymmetry: React.FC = () => {
         timestamp: stampId
       }
     ]);
-  }, [uColor, negUColor, addTelemetry]);
+  }, [uColor, negUColor, halfAngle, addTelemetry]);
+
+  // Manual stamp at current direction/aperture (for the Stamp button)
+  const addStamp = useCallback(() => {
+    const id = Date.now();
+    setStampCaps(prev => [...prev, { dir: currentDir, aperture: halfAngle, uColor, negUColor, id }]);
+    addTelemetry("STAMP_CAP", `Stamped θ=${halfAngle.toFixed(2)} at [${currentDir.map(v => v.toFixed(2)).join(', ')}]`);
+  }, [currentDir, halfAngle, uColor, negUColor, addTelemetry]);
 
   // Spawn fiber bundle during drive mode
   const spawnFiberBundle = useCallback((dir: Vec3) => {
@@ -751,7 +815,7 @@ const QuotientSymmetry: React.FC = () => {
   }, [shapeId]);
 
   return (
-    <div className="flex flex-col min-h-[100dvh] bg-white text-slate-800 font-sans antialiased">
+    <div className="flex flex-col h-[100dvh] bg-white text-slate-800 font-sans antialiased">
       {/* Universal Technical Header */}
       <header className="h-auto min-h-14 border-b border-slate-200 flex items-center justify-between px-2 sm:px-6 py-2 sm:py-0 shrink-0 z-50 bg-white/80 backdrop-blur-md">
         <div className="flex items-center gap-2 sm:gap-6 min-w-0 overflow-hidden">
@@ -786,7 +850,7 @@ const QuotientSymmetry: React.FC = () => {
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 overflow-y-auto md:overflow-hidden flex flex-col">
+      <main className="flex-1 min-h-0 overflow-y-auto md:overflow-hidden flex flex-col">
         {/* Laboratory View - The Core Visualization */}
         {page === 'lab' && (
           <div className="flex-1 flex flex-col relative bg-slate-50/50 overflow-visible md:overflow-hidden">
@@ -795,12 +859,20 @@ const QuotientSymmetry: React.FC = () => {
                 <h2 className="text-base sm:text-xl font-bold text-slate-900 tracking-tight">Manifold Mapping Laboratory</h2>
                 <p className="text-xs text-slate-500 mt-1 uppercase tracking-widest font-medium hidden sm:block">Real-time projective identification: S² → ℝP²</p>
               </div>
-              <button
-                onClick={() => setDriveMode(!driveMode)}
-                className={`px-3 py-2 sm:px-6 rounded text-[11px] font-bold uppercase border transition-all ${driveMode ? 'bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-900/10' : 'bg-white text-slate-700 border-slate-300 hover:border-slate-900'}`}
-              >
-                {driveMode ? 'Halt' : 'Trace'}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={addStamp}
+                  className="px-3 py-2 sm:px-5 rounded text-[11px] font-bold uppercase border transition-all bg-white text-slate-700 border-slate-300 hover:border-slate-900"
+                >
+                  Stamp
+                </button>
+                <button
+                  onClick={() => setDriveMode(!driveMode)}
+                  className={`px-3 py-2 sm:px-6 rounded text-[11px] font-bold uppercase border transition-all ${driveMode ? 'bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-900/10' : 'bg-white text-slate-700 border-slate-300 hover:border-slate-900'}`}
+                >
+                  {driveMode ? 'Halt' : 'Trace'}
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 flex flex-col md:flex-row p-2 gap-2 sm:p-8 sm:gap-8 overflow-visible md:overflow-hidden">
@@ -829,6 +901,7 @@ const QuotientSymmetry: React.FC = () => {
                       }}
                     />
                     <StampedDirections stamps={stamps} meshData={meshData} />
+                    <StampCapsLayer caps={stampCaps} radius={meshRadius * 1.008} />
                   </Center>
                 </Canvas>
               </section>
@@ -1004,6 +1077,7 @@ const QuotientSymmetry: React.FC = () => {
                   setUColor("#00e5bc");
                   setFiberBundles([]);
                   setStamps([]);
+                  setStampCaps([]);
                   addTelemetry("RESET", "System recalibrated to default state");
                 }}
                 className="w-full md:w-auto px-8 py-3 bg-slate-800 text-white font-black text-[9px] uppercase rounded-full hover:bg-slate-700 transition-all shadow-lg active:scale-95"
