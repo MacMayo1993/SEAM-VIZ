@@ -53,12 +53,13 @@ const Icon = {
 
 const InternalCone = ({ dir, color, angle, renderOrder }: { dir: Vec3, color: string, angle: number, renderOrder: number }) => {
   const groupRef = useRef<THREE.Group>(null);
+  const upRef = useRef(new THREE.Vector3(0, 1, 0));
+  const targetRef = useRef(new THREE.Vector3());
 
   useFrame(() => {
     if (groupRef.current) {
-      const targetVec = new THREE.Vector3(...dir).normalize();
-      const up = new THREE.Vector3(0, 1, 0);
-      groupRef.current.quaternion.setFromUnitVectors(up, targetVec);
+      targetRef.current.set(...dir).normalize();
+      groupRef.current.quaternion.setFromUnitVectors(upRef.current, targetRef.current);
     }
   });
 
@@ -529,6 +530,7 @@ const LibraryView = () => (
 );
 
 const QuotientSymmetry: React.FC = () => {
+  const MAX_FIBER_BUNDLES = 300;
   // Page navigation state
   const [page, setPage] = useState<'lab' | 'analytics' | 'library'>('lab');
 
@@ -625,7 +627,7 @@ const QuotientSymmetry: React.FC = () => {
 
     // Create a fiber visualization at the clicked equivalence class
     setFiberBundles(prev => [
-      ...prev,
+      ...prev.slice(-(MAX_FIBER_BUNDLES - 1)),
       {
         quotientPoint: dir,
         representatives: [dir, negDir],
@@ -639,7 +641,7 @@ const QuotientSymmetry: React.FC = () => {
   const spawnFiberBundle = useCallback((dir: Vec3) => {
     const negDir: Vec3 = [-dir[0], -dir[1], -dir[2]];
     setFiberBundles(prev => [
-      ...prev,
+      ...prev.slice(-(MAX_FIBER_BUNDLES - 1)),
       {
         quotientPoint: dir,
         representatives: [dir, negDir],
@@ -647,7 +649,7 @@ const QuotientSymmetry: React.FC = () => {
         timestamp: Date.now()
       }
     ]);
-  }, [uColor, negUColor]);
+  }, [uColor, negUColor, MAX_FIBER_BUNDLES]);
 
   const meshData = useMemo(() => makeShapeMesh(shapeId, 64), [shapeId]);
   const meshRadius = useMemo(
