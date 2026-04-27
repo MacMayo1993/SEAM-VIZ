@@ -24,12 +24,13 @@ const StartMenu: React.FC = () => {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        height: '100vh',
+        minHeight: '100dvh',
         background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)',
         textAlign: 'center',
-        padding: '20px',
+        padding: 'max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom))',
         position: 'relative',
-        overflow: 'hidden',
+        overflowX: 'hidden',
+        overflowY: 'auto',
       }}
     >
       {/* Animated grid background */}
@@ -44,34 +45,35 @@ const StartMenu: React.FC = () => {
         opacity: 0.3,
       }} />
 
-      <div style={{ maxWidth: '900px', color: 'white', position: 'relative', zIndex: 1 }}>
-        <div style={{ marginBottom: '2rem' }}>
-          <h1 style={{ fontSize: '5rem', fontWeight: '900', marginBottom: '0.5rem', letterSpacing: '-0.02em', lineHeight: 1 }}>
+      <div style={{ width: '100%', maxWidth: '900px', color: 'white', position: 'relative', zIndex: 1 }}>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h1 style={{ fontSize: 'clamp(2.2rem, 12vw, 5rem)', fontWeight: '900', marginBottom: '0.5rem', letterSpacing: '-0.02em', lineHeight: 1 }}>
             SEAM-VIZ
           </h1>
-          <p style={{ fontSize: '1rem', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.3em', opacity: 0.6, fontWeight: 'bold' }}>
+          <p style={{ fontSize: 'clamp(0.7rem, 2.8vw, 1rem)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.2em', opacity: 0.6, fontWeight: 'bold' }}>
             Projective Identification Instrument
           </p>
         </div>
 
         <div style={{
-          padding: '2rem',
+          padding: 'clamp(1rem, 4vw, 2rem)',
           backgroundColor: 'rgba(255, 255, 255, 0.05)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
           borderRadius: '16px',
           marginBottom: '3rem',
           backdropFilter: 'blur(10px)',
         }}>
-          <p style={{ fontSize: '1.1rem', lineHeight: '1.8', marginBottom: '1rem' }}>
+          <p style={{ fontSize: 'clamp(0.95rem, 3.6vw, 1.1rem)', lineHeight: '1.7', marginBottom: '1rem' }}>
             An interactive instrument for exploring <strong>quotient geometry</strong>, <strong>topology</strong>,
             and <strong>information-theoretic identification</strong> through the real projective plane ℝP².
           </p>
           <div style={{
             display: 'flex',
             justifyContent: 'center',
-            gap: '2rem',
+            gap: '0.75rem',
+            flexWrap: 'wrap',
             marginTop: '1.5rem',
-            fontSize: '0.9rem',
+            fontSize: 'clamp(0.75rem, 3vw, 0.9rem)',
             opacity: 0.8,
           }}>
             <span>• Antipodal Identification</span>
@@ -84,8 +86,8 @@ const StartMenu: React.FC = () => {
           <Link to="/tutorials" style={{ textDecoration: 'none', width: '100%', maxWidth: '500px' }}>
             <button style={{
               width: '100%',
-              padding: '1.5rem 2rem',
-              fontSize: '1rem',
+              padding: '1.1rem 1rem',
+              fontSize: '0.9rem',
               fontWeight: 'bold',
               backgroundColor: 'rgba(255, 255, 255, 0.1)',
               color: 'white',
@@ -122,8 +124,8 @@ const StartMenu: React.FC = () => {
           <Link to="/quotient" style={{ textDecoration: 'none', width: '100%', maxWidth: '500px' }}>
             <button style={{
               width: '100%',
-              padding: '1.5rem 2rem',
-              fontSize: '1rem',
+              padding: '1.1rem 1rem',
+              fontSize: '0.9rem',
               fontWeight: 'bold',
               backgroundColor: 'rgba(59, 130, 246, 0.2)',
               color: 'white',
@@ -160,8 +162,8 @@ const StartMenu: React.FC = () => {
         </div>
 
         <div style={{
-          marginTop: '4rem',
-          padding: '1.5rem',
+          marginTop: '2rem',
+          padding: '1rem',
           backgroundColor: 'rgba(0, 0, 0, 0.3)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
           borderRadius: '12px',
@@ -170,11 +172,8 @@ const StartMenu: React.FC = () => {
           <p style={{ fontSize: '0.75rem', opacity: 0.7, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.2em', fontWeight: 'bold' }}>
             Topological Identification Protocol
           </p>
-          <p style={{ fontSize: '1rem', fontFamily: 'monospace', opacity: 0.9 }}>
+          <p style={{ fontSize: '0.95rem', fontFamily: 'monospace', opacity: 0.9 }}>
             S² / (u ≡ −u) = ℝP²
-          </p>
-          <p style={{ fontSize: '0.7rem', opacity: 0.5, marginTop: '0.5rem' }}>
-            k* = 1/(2 ln 2) ≈ 0.721347520...
           </p>
         </div>
       </div>
