@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { Canvas, ThreeEvent, useFrame, useThree } from '@react-three/fiber';
-import { PerspectiveCamera, Center, Environment, OrbitControls, Edges } from '@react-three/drei';
+import { PerspectiveCamera, Center, Environment, OrbitControls, Edges, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { Vec3, Mesh, makeShapeMesh, ShapeId } from '../core';
 import { AntipodalColorPicker } from '../app/ui/AntipodalColorPicker';
@@ -70,7 +70,7 @@ const InternalCone = ({ dir, color, angle, renderOrder }: { dir: Vec3, color: st
   return (
     <group ref={groupRef}>
       <mesh position={[0, coneHeight / 2, 0]} rotation={[Math.PI, 0, 0]} renderOrder={renderOrder}>
-        <coneGeometry args={[coneRadius, coneHeight, 128, 1, false]} />
+        <coneGeometry args={[coneRadius, coneHeight, 64, 1, false]} />
         <meshStandardMaterial
           color={color}
           transparent
@@ -82,7 +82,7 @@ const InternalCone = ({ dir, color, angle, renderOrder }: { dir: Vec3, color: st
         />
       </mesh>
       <mesh renderOrder={renderOrder + 1}>
-        <sphereGeometry args={[1.002, 128, 64, 0, Math.PI * 2, 0, angle]} />
+        <sphereGeometry args={[1.002, 64, 32, 0, Math.PI * 2, 0, angle]} />
         <meshStandardMaterial
           color={color}
           transparent
@@ -276,7 +276,7 @@ const SelectorInstrument = ({
     <group>
       {/* Interaction Shell - Invisible but catches clicks */}
       <mesh ref={meshRef} onPointerDown={handlePointer} renderOrder={100}>
-        <sphereGeometry args={[1.05, 64, 64]} />
+        <sphereGeometry args={[1.05, 48, 48]} />
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
 
@@ -284,7 +284,7 @@ const SelectorInstrument = ({
 
       {/* Visual Sphere Shell */}
       <mesh renderOrder={50}>
-        <sphereGeometry args={[1, 64, 48]} />
+        <sphereGeometry args={[1, 48, 32]} />
         <meshStandardMaterial
           color="#ffffff"
           transparent
@@ -296,7 +296,7 @@ const SelectorInstrument = ({
       </mesh>
 
       <mesh renderOrder={51}>
-        <sphereGeometry args={[1, 48, 36]} />
+        <sphereGeometry args={[1, 32, 24]} />
         <meshBasicMaterial color="#94a3b8" wireframe transparent opacity={0.05} depthWrite={false} />
       </mesh>
     </group>
@@ -332,6 +332,56 @@ const StampedDirections = ({
     })}
   </group>
 );
+
+const UDirectionMarkers = ({
+  direction,
+  uColor,
+  negUColor
+}: {
+  direction: Vec3;
+  uColor: string;
+  negUColor: string;
+}) => {
+  const u = useMemo(() => Vec3.normalize(direction), [direction]);
+  const negU = useMemo(() => Vec3.neg(u), [u]);
+  const r = 1.14;
+
+  const labelStyle = (color: string): React.CSSProperties => ({
+    color,
+    fontWeight: 900,
+    fontSize: '13px',
+    fontFamily: 'Georgia, serif',
+    background: 'rgba(255,255,255,0.92)',
+    padding: '1px 6px',
+    borderRadius: '3px',
+    userSelect: 'none',
+    pointerEvents: 'none',
+    whiteSpace: 'nowrap',
+    border: `1px solid ${color}55`,
+    marginLeft: '9px',
+    lineHeight: 1.5,
+    letterSpacing: '0.01em',
+  });
+
+  return (
+    <group>
+      <mesh position={[u[0] * r, u[1] * r, u[2] * r]}>
+        <sphereGeometry args={[0.042, 12, 12]} />
+        <meshBasicMaterial color={uColor} />
+        <Html center distanceFactor={5} zIndexRange={[100, 0]} style={{ pointerEvents: 'none' }}>
+          <div style={labelStyle(uColor)}>u</div>
+        </Html>
+      </mesh>
+      <mesh position={[negU[0] * r, negU[1] * r, negU[2] * r]}>
+        <sphereGeometry args={[0.042, 12, 12]} />
+        <meshBasicMaterial color={negUColor} />
+        <Html center distanceFactor={5} zIndexRange={[100, 0]} style={{ pointerEvents: 'none' }}>
+          <div style={labelStyle(negUColor)}>−u</div>
+        </Html>
+      </mesh>
+    </group>
+  );
+};
 
 const AbstractUIBackground = ({ uColor, negUColor, aperture }: { uColor: string, negUColor: string, aperture: number }) => {
   const glowOpacity = useMemo(() => {
@@ -529,8 +579,9 @@ const LibraryView = () => (
   </div>
 );
 
+const MAX_FIBER_BUNDLES = 300;
+
 const QuotientSymmetry: React.FC = () => {
-  const MAX_FIBER_BUNDLES = 300;
   // Page navigation state
   const [page, setPage] = useState<'lab' | 'analytics' | 'library'>('lab');
 
@@ -659,7 +710,7 @@ const QuotientSymmetry: React.FC = () => {
 
   const leftPanelTitle = useMemo(() => {
     const planar = ["circle", "disk", "triangle", "square"];
-    return planar.includes(shapeId) ? "OBJECT IN ℝ² (embedded in ℝ³)" : "OBJECT IN ℝ³";
+    return planar.includes(shapeId) ? "STATE SPACE (ℝ²)" : "STATE SPACE (ℝ³)";
   }, [shapeId]);
 
   return (
@@ -720,7 +771,7 @@ const QuotientSymmetry: React.FC = () => {
               <section className="h-[280px] sm:h-[340px] md:h-full flex-1 relative rounded-[2.5rem] bg-white/40 border border-white/50 overflow-hidden shadow-inner">
                 <div className="absolute top-4 left-4 sm:top-8 sm:left-10 z-10 pointer-events-none max-w-[70%]">
                   <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em]">{leftPanelTitle}</h2>
-                  <p className="text-[8px] text-slate-300 mt-1">Double-Cover Space (S²)</p>
+                  <p className="text-[8px] text-slate-300 mt-1">Points highlighted under identification u ≡ −u</p>
                 </div>
                 <Canvas shadows dpr={[1, 2]}>
                   <PerspectiveCamera makeDefault position={[3.5, 2.5, 4.5]} fov={35} />
@@ -745,12 +796,29 @@ const QuotientSymmetry: React.FC = () => {
                 </Canvas>
               </section>
 
+              {/* Identification Bridge — desktop only */}
+              <div className="hidden md:flex flex-col items-center justify-center shrink-0 w-20 pointer-events-none select-none gap-0">
+                <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">S²</span>
+                <div className="w-px flex-1 min-h-[40px] bg-gradient-to-b from-transparent via-slate-200 to-transparent" />
+                <div className="p-3 bg-white rounded-2xl border border-slate-200 shadow-md text-center">
+                  <div className="text-base font-black text-slate-800 leading-none mb-1.5">π</div>
+                  <div className="text-[9px] font-mono text-slate-400 leading-relaxed">
+                    <div>π(u) =</div>
+                    <div>π(−u)</div>
+                    <div className="text-slate-300">=</div>
+                    <div className="text-slate-600 font-bold">[u]</div>
+                  </div>
+                </div>
+                <div className="w-px flex-1 min-h-[40px] bg-gradient-to-b from-transparent via-slate-200 to-transparent" />
+                <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">ℝP²</span>
+              </div>
+
               {/* Projective Selector */}
               <section className="h-[280px] sm:h-[340px] md:h-full flex-1 relative rounded-[2.5rem] bg-white shadow-xl overflow-hidden border border-slate-100/50">
                 <div className="absolute top-4 right-4 sm:top-8 sm:right-10 z-10 text-right pointer-events-none max-w-[75%]">
-                  <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em]">Quotient Manifold (ℝP²)</h2>
+                  <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em]">QUOTIENT SPACE (ℝP²)</h2>
                   <div className="flex flex-col gap-1 mt-2">
-                    <span className="text-[9px] font-bold text-slate-300 uppercase italic">Map: π(x) ≡ π(−x)</span>
+                    <span className="text-[9px] font-bold text-slate-300 uppercase italic">Click to choose [u] — selects u and −u</span>
                   </div>
                 </div>
 
@@ -792,6 +860,7 @@ const QuotientSymmetry: React.FC = () => {
                       onUpdate={handleQuotientClick}
                       driveMode={driveMode}
                     />
+                    <UDirectionMarkers direction={currentDir} uColor={uColor} negUColor={negUColor} />
                     <FiberBundles bundles={fiberBundles} maxBundles={5} />
                   </Center>
                 </Canvas>
@@ -801,9 +870,9 @@ const QuotientSymmetry: React.FC = () => {
             {/* Metric Bar Overlay */}
             <div className="relative md:absolute mt-2 md:mt-0 left-0 md:left-1/2 md:bottom-4 lg:bottom-10 md:-translate-x-1/2 bg-white border border-slate-200 rounded-lg shadow-xl md:shadow-2xl flex divide-x divide-slate-100 overflow-x-auto max-w-[calc(100vw-1rem)] md:max-w-[calc(100vw-2rem)] z-10 mx-auto md:mx-0">
               {[
-                { label: 'Map', val: 'π(x) ≡ π(−x)' },
-                { label: 'Parity', val: shapeId, col: 'text-blue-600' },
-                { label: 'Boundary', val: 'ℤ₂ Seam', hideOnMobile: true }
+                { label: 'Covering Map', val: 'π: S² → ℝP²' },
+                { label: 'Shape', val: shapeId, col: 'text-blue-600' },
+                { label: 'Current u', val: `[${currentDir.map(v => v.toFixed(2)).join(', ')}]`, hideOnMobile: true }
               ].map((m, i) => (
                 <div key={i} className={`px-4 sm:px-10 py-3 sm:py-4 flex flex-col items-center min-w-[80px] sm:min-w-[160px] shrink-0${m.hideOnMobile ? ' hidden sm:flex' : ''}`}>
                   <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">{m.label}</span>
@@ -852,7 +921,10 @@ const QuotientSymmetry: React.FC = () => {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Aperture θ</label>
+              <div className="flex justify-between items-baseline">
+                <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Aperture θ</label>
+                <span className="text-[10px] font-mono font-bold text-slate-600">{halfAngle.toFixed(2)} rad ({(halfAngle * 180 / Math.PI).toFixed(0)}°)</span>
+              </div>
               <div className="py-1">
                 <input
                   type="range" min="0.05" max="1.5" step="0.01"
