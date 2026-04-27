@@ -89,7 +89,9 @@ export const AntipodalColorPicker: React.FC<AntipodalColorPickerProps> = ({
       padding: '16px',
       background: 'rgba(255, 255, 255, 0.05)',
       borderRadius: '8px',
-      border: '1px solid rgba(255, 255, 255, 0.1)'
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      width: '100%',
+      minWidth: 0
     }}>
       {/* Header */}
       <div style={{
@@ -118,6 +120,7 @@ export const AntipodalColorPicker: React.FC<AntipodalColorPickerProps> = ({
       <div style={{
         display: 'flex',
         alignItems: 'center',
+        flexWrap: 'wrap',
         gap: '12px',
         padding: '12px',
         background: 'rgba(0, 0, 0, 0.2)',
@@ -173,7 +176,8 @@ export const AntipodalColorPicker: React.FC<AntipodalColorPickerProps> = ({
           color: 'rgba(255, 255, 255, 0.7)',
           background: 'rgba(0, 0, 0, 0.3)',
           padding: '4px 8px',
-          borderRadius: '4px'
+          borderRadius: '4px',
+          marginLeft: 'auto'
         }}>
           {primaryColor.toUpperCase()}
         </div>
@@ -184,8 +188,10 @@ export const AntipodalColorPicker: React.FC<AntipodalColorPickerProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        flexDirection: 'column',
         position: 'relative',
-        height: '40px'
+        minHeight: '56px',
+        gap: '6px'
       }}>
         {/* Animated sphere visualization */}
         <div style={{
@@ -210,12 +216,12 @@ export const AntipodalColorPicker: React.FC<AntipodalColorPickerProps> = ({
 
         {/* Label */}
         <div style={{
-          position: 'absolute',
-          right: '-80px',
+          position: 'relative',
           fontSize: '11px',
           color: 'rgba(255, 255, 255, 0.4)',
           fontStyle: 'italic',
-          whiteSpace: 'nowrap'
+          whiteSpace: 'normal',
+          textAlign: 'center'
         }}>
           {isAnimating ? 'finding opposite...' : 'antipodal pair'}
         </div>
@@ -225,6 +231,7 @@ export const AntipodalColorPicker: React.FC<AntipodalColorPickerProps> = ({
       <div style={{
         display: 'flex',
         alignItems: 'center',
+        flexWrap: 'wrap',
         gap: '12px',
         padding: '12px',
         background: 'rgba(0, 0, 0, 0.2)',
@@ -286,7 +293,8 @@ export const AntipodalColorPicker: React.FC<AntipodalColorPickerProps> = ({
           color: 'rgba(255, 255, 255, 0.7)',
           background: 'rgba(0, 0, 0, 0.3)',
           padding: '4px 8px',
-          borderRadius: '4px'
+          borderRadius: '4px',
+          marginLeft: 'auto'
         }}>
           {antipodalColor.toUpperCase()}
         </div>

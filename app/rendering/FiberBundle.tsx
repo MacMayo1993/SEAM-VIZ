@@ -53,34 +53,24 @@ export const FiberBundle: React.FC<FiberBundleProps> = ({
 
   // Create fiber bundle geometry
   const fiberGeometry = useMemo(() => {
-    const geometry = new THREE.BufferGeometry();
+    // Draw each fiber from its own representative direction to avoid a single shared origin
+    const startRadius = 1.02;
+    const endRadius = 1.55;
 
-    // Each fiber is a line from the quotient point extending upward
-    // We'll draw two bundles, one for each representative
-    const bundleHeight = 1.5; // Height above the sphere
-
-    // Fiber 1: from quotient point toward u
+    // Fiber 1: from representative u outward
     const fiber1Points = [
-      new THREE.Vector3(...quotientPoint),
-      new THREE.Vector3(
-        quotientPoint[0] + u[0] * bundleHeight * 0.3,
-        quotientPoint[1] + u[1] * bundleHeight * 0.3 + bundleHeight,
-        quotientPoint[2] + u[2] * bundleHeight * 0.3
-      )
+      new THREE.Vector3(u[0] * startRadius, u[1] * startRadius, u[2] * startRadius),
+      new THREE.Vector3(u[0] * endRadius, u[1] * endRadius, u[2] * endRadius)
     ];
 
-    // Fiber 2: from quotient point toward -u
+    // Fiber 2: from representative -u outward
     const fiber2Points = [
-      new THREE.Vector3(...quotientPoint),
-      new THREE.Vector3(
-        quotientPoint[0] + negU[0] * bundleHeight * 0.3,
-        quotientPoint[1] + negU[1] * bundleHeight * 0.3 + bundleHeight,
-        quotientPoint[2] + negU[2] * bundleHeight * 0.3
-      )
+      new THREE.Vector3(negU[0] * startRadius, negU[1] * startRadius, negU[2] * startRadius),
+      new THREE.Vector3(negU[0] * endRadius, negU[1] * endRadius, negU[2] * endRadius)
     ];
 
     return { fiber1Points, fiber2Points };
-  }, [quotientPoint, u, negU]);
+  }, [u, negU]);
 
   const group = useRef<THREE.Group>(null);
 
@@ -147,9 +137,9 @@ export const FiberBundle: React.FC<FiberBundleProps> = ({
       {/* Endpoint markers for u */}
       <mesh
         position={[
-          quotientPoint[0] + u[0] * 0.45 + u[0] * 0.1,
-          quotientPoint[1] + u[1] * 0.45 + 1.5 + u[1] * 0.1,
-          quotientPoint[2] + u[2] * 0.45 + u[2] * 0.1
+          u[0] * endRadius,
+          u[1] * endRadius,
+          u[2] * endRadius
         ]}
       >
         <sphereGeometry args={[0.04, 16, 16]} />
@@ -159,9 +149,9 @@ export const FiberBundle: React.FC<FiberBundleProps> = ({
       {/* Endpoint markers for -u */}
       <mesh
         position={[
-          quotientPoint[0] + negU[0] * 0.45 + negU[0] * 0.1,
-          quotientPoint[1] + negU[1] * 0.45 + 1.5 + negU[1] * 0.1,
-          quotientPoint[2] + negU[2] * 0.45 + negU[2] * 0.1
+          negU[0] * endRadius,
+          negU[1] * endRadius,
+          negU[2] * endRadius
         ]}
       >
         <sphereGeometry args={[0.04, 16, 16]} />
