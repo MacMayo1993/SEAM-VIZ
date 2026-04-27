@@ -635,6 +635,197 @@ const LibraryView = () => (
             query it, and observe how the identification constrains your observations."
           </div>
         </section>
+
+        <section>
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">Everyday Vernacular</h2>
+          <p className="mb-6 text-slate-500 italic text-sm">
+            Plain-language translations of the core concepts — for when the symbols need a human voice.
+          </p>
+
+          <div className="space-y-4">
+
+            <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/50">
+              <div className="flex items-start gap-4">
+                <span className="text-lg font-black text-slate-800 shrink-0 w-8">u ≡ −u</span>
+                <div>
+                  <p className="font-bold text-slate-800 mb-1">The Matching Rule</p>
+                  <p className="text-sm text-slate-600">
+                    Imagine pointing your finger in some direction. Now imagine someone else pointing
+                    in the exact <em>opposite</em> direction. In projective space, you two are
+                    pointing at the <em>same thing</em> — because direction-without-orientation has
+                    no "which end is the front." Every direction comes permanently paired with its
+                    mirror-opposite; you can never have one without the other.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/50">
+              <div className="flex items-start gap-4">
+                <span className="text-lg font-black text-slate-800 shrink-0 w-8">ℝP²</span>
+                <div>
+                  <p className="font-bold text-slate-800 mb-1">The Space of Unoriented Directions</p>
+                  <p className="text-sm text-slate-600">
+                    Think of a compass that shows only the axis of a needle — not which end is
+                    North. North–South is one reading; East–West is another. That is ℝP¹ (a circle
+                    of axes). Now extend to all possible axes through the center of a globe: every
+                    axis defines exactly one point in ℝP². The whole collection of those points —
+                    without specifying which pole is "up" — is the real projective plane.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/50">
+              <div className="flex items-start gap-4">
+                <span className="text-lg font-black text-slate-800 shrink-0 w-8">[u]</span>
+                <div>
+                  <p className="font-bold text-slate-800 mb-1">An Equivalence Class: The Matched Pair</p>
+                  <p className="text-sm text-slate-600">
+                    The bracket notation [u] means: "u and everything we've agreed to treat as
+                    identical to u." Here that is exactly {"{u, −u}"} — the point and its antipode.
+                    It is like a single locker key that always opens <em>two</em> lockers on
+                    opposite walls simultaneously. You cannot open one without opening the other.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/50">
+              <div className="flex items-start gap-4">
+                <span className="text-lg font-black text-slate-800 shrink-0 w-8">π</span>
+                <div>
+                  <p className="font-bold text-slate-800 mb-1">The Covering Map: Two Floors, One Address</p>
+                  <p className="text-sm text-slate-600">
+                    Imagine a hotel where rooms 101 and 901 share the same mailing address. The
+                    covering map π is the postal rule: it takes any room number and delivers mail
+                    to the shared address. Because two rooms share every address, we call this a
+                    "2:1 covering." Traveling between the two floors is exactly what the
+                    spotlights make visible.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/50">
+              <div className="flex items-start gap-4">
+                <span className="text-lg font-black text-slate-800 shrink-0 w-8">π⁻¹</span>
+                <div>
+                  <p className="font-bold text-slate-800 mb-1">The Fiber: Looking Up the Guest List</p>
+                  <p className="text-sm text-slate-600">
+                    The fiber over a point [u] is the answer to "which rooms share this address?"
+                    For ℝP² the answer is always exactly two rooms: u and −u. In SEAM-VIZ the
+                    two colored spotlights are a live picture of the fiber — they show you both
+                    residents of the same quotient address at the same time.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/50">
+              <div className="flex items-start gap-4">
+                <span className="text-lg font-black text-slate-800 shrink-0 w-8">θ</span>
+                <div>
+                  <p className="font-bold text-slate-800 mb-1">Aperture: The Spotlight Beam Width</p>
+                  <p className="text-sm text-slate-600">
+                    Aperture is simply how wide the cone of a spotlight is — measured as the
+                    half-angle from the center beam to the edge. A small θ is a tight laser beam
+                    touching almost no points. A large θ is a flood lamp bathing most of the
+                    object. Because the identification always pairs two cones, widening θ widens
+                    <em>both</em> beams simultaneously.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/50">
+              <div className="flex items-start gap-4">
+                <span className="text-lg font-black text-slate-800 shrink-0 w-8">Ω</span>
+                <div>
+                  <p className="font-bold text-slate-800 mb-1">Solid Angle: How Much Sky a Cone Covers</p>
+                  <p className="text-sm text-slate-600">
+                    A regular angle measures how wide a "slice of pie" is in 2D. A solid angle
+                    measures how wide a "ice-cream cone" is in 3D. The unit is the steradian.
+                    The entire sky is 4π ≈ 12.57 sr. One spotlight with aperture θ covers
+                    2π(1 − cos θ) sr. At 45° that is about 1.84 sr — roughly 15% of the sky.
+                    The antipodal pair therefore together cover about 3.68 sr, or about 29% of
+                    the full sphere.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/50">
+              <div className="flex items-start gap-4">
+                <span className="text-lg font-black text-slate-800 shrink-0 w-8 leading-tight">Non-<br/>orient.</span>
+                <div>
+                  <p className="font-bold text-slate-800 mb-1">Non-Orientable: No Consistent "Right Side Up"</p>
+                  <p className="text-sm text-slate-600">
+                    On a normal surface you can always paint one side red and the other blue
+                    and the colors never meet. On a non-orientable surface — like a Möbius strip
+                    or ℝP² — if you start painting "red on top" and walk far enough, you
+                    arrive back where you started but you're now on the <em>other</em> side.
+                    There is no globally consistent meaning to "left" or "outward normal."
+                    This is not a defect; it is the unavoidable arithmetic of the antipodal rule.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/50">
+              <div className="flex items-start gap-4">
+                <span className="text-lg font-black text-slate-800 shrink-0 w-8">ℤ₂</span>
+                <div>
+                  <p className="font-bold text-slate-800 mb-1">ℤ₂: The Even/Odd Ledger</p>
+                  <p className="text-sm text-slate-600">
+                    ℤ₂ is the simplest possible group: it has only two elements, 0 and 1, where
+                    the rule is just like parity — odd + odd = even, odd + even = odd. In the
+                    context of ℝP², it tracks whether you have crossed the identification seam
+                    an even or odd number of times along a path. One crossing flips
+                    orientation; two crossings restore it. The fundamental group π₁(ℝP²) ≅ ℤ₂
+                    is just the formal statement that loops on ℝP² come in exactly two
+                    flavors: contractible (even, parity 0) and non-contractible (odd, parity 1).
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/50">
+              <div className="flex items-start gap-4">
+                <span className="text-lg font-black text-slate-800 shrink-0 w-8">d([u],[v])</span>
+                <div>
+                  <p className="font-bold text-slate-800 mb-1">Projective Distance: The Angle Between Axes</p>
+                  <p className="text-sm text-slate-600">
+                    Ordinary angle between two vectors on a sphere runs from 0° to 180°. In
+                    projective space, because u and −u are the same point, the farthest apart
+                    any two points can be is 90°. The distance formula arccos(|u · v|)
+                    automatically "folds" the sphere in half: it takes the smaller of the two
+                    angles (direct and antipodal) and reports that. Two perpendicular axes are
+                    maximally different; parallel axes (same or opposite) have zero distance.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/50">
+              <div className="flex items-start gap-4">
+                <span className="text-lg font-black text-slate-800 shrink-0 w-8">Pull<br/>back</span>
+                <div>
+                  <p className="font-bold text-slate-800 mb-1">Pullback: Doing Things Symmetrically</p>
+                  <p className="text-sm text-slate-600">
+                    When you "do something" in the quotient space — stamp a mark, select a
+                    region, draw a path — that action must affect <em>both</em> representatives
+                    u and −u in the source sphere equally. "Pulling back" means translating a
+                    single quotient-space instruction into two mirror-image source-space actions.
+                    It is the mechanism that makes the identification honest: you cannot act on
+                    one half of the pair and leave the other untouched.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
       </div>
     </article>
   </div>

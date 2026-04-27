@@ -215,9 +215,12 @@ SEAM-VIZ is not a "simulation" or "visualization"—it's an **instrument**.
 **Sample problem set**:
 
 > **Problem 1**: Open SEAM-VIZ. Set the aperture to 45°. Click the north pole.
-> (a) How many points on S² are highlighted?
+> (a) How many regions on S² are highlighted?
+> Answer: Two antipodal cone-shaped regions — one around u (north pole) and one around −u (south pole). Each contains infinitely many points.
 > (b) What solid angle (in steradians) does each spotlight cover?
+> Answer: Ω_each = 2π(1 − cos 45°) = 2π(1 − 1/√2) ≈ 1.84 steradians
 > (c) What is the total solid angle covered on S²?
+> Answer: Ω_total = 2 · 2π(1 − cos 45°) = 4π(1 − 1/√2) ≈ 3.68 steradians
 
 > **Problem 2**: Consider the map f: ℝP² → ℝP² defined by [u] ↦ [2u/‖2u‖].
 > (a) Is this well-defined? Why or why not?
