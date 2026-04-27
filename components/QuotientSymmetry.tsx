@@ -59,7 +59,12 @@ const InternalCone = ({ dir, color, angle, renderOrder }: { dir: Vec3, color: st
   useFrame(() => {
     if (groupRef.current) {
       targetRef.current.set(...dir).normalize();
-      groupRef.current.quaternion.setFromUnitVectors(upRef.current, targetRef.current);
+      if (upRef.current.dot(targetRef.current) < -0.9999) {
+        // Antiparallel singularity: rotate 180° around X-axis instead
+        groupRef.current.quaternion.set(1, 0, 0, 0);
+      } else {
+        groupRef.current.quaternion.setFromUnitVectors(upRef.current, targetRef.current);
+      }
     }
   });
 
@@ -357,16 +362,16 @@ const UDirectionMarkers = ({
   const labelStyle = (color: string): React.CSSProperties => ({
     color,
     fontWeight: 900,
-    fontSize: '13px',
+    fontSize: '9px',
     fontFamily: 'Georgia, serif',
     background: 'rgba(255,255,255,0.92)',
-    padding: '1px 6px',
+    padding: '0px 4px',
     borderRadius: '3px',
     userSelect: 'none',
     pointerEvents: 'none',
     whiteSpace: 'nowrap',
     border: `1px solid ${color}55`,
-    marginLeft: '9px',
+    marginLeft: '5px',
     lineHeight: 1.5,
     letterSpacing: '0.01em',
   });
@@ -374,16 +379,16 @@ const UDirectionMarkers = ({
   return (
     <group>
       <mesh position={[u[0] * r, u[1] * r, u[2] * r]}>
-        <sphereGeometry args={[0.042, 12, 12]} />
+        <sphereGeometry args={[0.025, 12, 12]} />
         <meshBasicMaterial color={uColor} />
-        <Html center distanceFactor={5} zIndexRange={[100, 0]} style={{ pointerEvents: 'none' }}>
+        <Html center distanceFactor={6} zIndexRange={[100, 0]} style={{ pointerEvents: 'none' }}>
           <div style={labelStyle(uColor)}>u</div>
         </Html>
       </mesh>
       <mesh position={[negU[0] * r, negU[1] * r, negU[2] * r]}>
-        <sphereGeometry args={[0.042, 12, 12]} />
+        <sphereGeometry args={[0.025, 12, 12]} />
         <meshBasicMaterial color={negUColor} />
-        <Html center distanceFactor={5} zIndexRange={[100, 0]} style={{ pointerEvents: 'none' }}>
+        <Html center distanceFactor={6} zIndexRange={[100, 0]} style={{ pointerEvents: 'none' }}>
           <div style={labelStyle(negUColor)}>−u</div>
         </Html>
       </mesh>
@@ -410,7 +415,13 @@ const SphericalCapStamp = ({ dir, aperture, color, radius }: {
 }) => {
   const quaternion = useMemo(() => {
     const q = new THREE.Quaternion();
-    q.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(...dir).normalize());
+    const up = new THREE.Vector3(0, 1, 0);
+    const target = new THREE.Vector3(...dir).normalize();
+    if (up.dot(target) < -0.9999) {
+      q.set(1, 0, 0, 0);
+    } else {
+      q.setFromUnitVectors(up, target);
+    }
     return q;
   }, [dir]);
 
@@ -1010,7 +1021,7 @@ const QuotientSymmetry: React.FC = () => {
 
         {/* Controls Footer - Only shown in Laboratory view */}
         {page === 'lab' && (
-          <footer className="px-4 sm:px-14 py-4 sm:py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 items-center border-t border-slate-200/40 bg-white/90 backdrop-blur-md z-20">
+          <footer className="px-4 sm:px-10 py-3 sm:py-4 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 items-start border-t border-slate-200/40 bg-white/90 backdrop-blur-md z-20">
             <div className="flex flex-col gap-2">
               <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Base Geometry</label>
               <select
@@ -1066,7 +1077,7 @@ const QuotientSymmetry: React.FC = () => {
               showHint={true}
             />
 
-            <div className="flex md:justify-end items-center">
+            <div className="flex items-start pt-5">
               <button
                 onClick={() => {
                   setCurrentDir([0,1,0]);
@@ -1077,7 +1088,7 @@ const QuotientSymmetry: React.FC = () => {
                   setStampCaps([]);
                   addTelemetry("RESET", "System recalibrated to default state");
                 }}
-                className="w-full md:w-auto px-8 py-3 bg-slate-800 text-white font-black text-[9px] uppercase rounded-full hover:bg-slate-700 transition-all shadow-lg active:scale-95"
+                className="w-full px-4 py-2 bg-slate-800 text-white font-black text-[9px] uppercase rounded-full hover:bg-slate-700 transition-all shadow-lg active:scale-95"
               >
                 Recalibrate
               </button>
