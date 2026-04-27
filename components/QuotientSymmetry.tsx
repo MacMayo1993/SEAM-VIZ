@@ -27,11 +27,7 @@ const Icon = {
       <path d="M12 2L2 7l10 5 10-5-10-5zM2 12l10 5 10-5M2 17l10 5 10-5" />
     </svg>
   ),
-  Analytics: () => (
-    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
-    </svg>
-  ),
+
   Library: () => (
     <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20M4 19.5V3a1 1 0 0 1 1-1h15v20H6.5a2.5 2.5 0 0 1-2.5-2.5z" />
@@ -484,83 +480,7 @@ const AbstractUIBackground = ({ uColor, negUColor, aperture }: { uColor: string,
   );
 };
 
-// --- View 2: Analytics (Data & Logs) ---
-interface TelemetryEntry {
-  time: string;
-  event: string;
-  desc: string;
-}
-
-const AnalyticsView = ({ history, fiberCount }: { history: TelemetryEntry[], fiberCount: number }) => {
-  const [infoGain, setInfoGain] = useState(14.8);
-  const [entropy, setEntropy] = useState(0.42);
-
-  useEffect(() => {
-    // Simulate evolving metrics based on activity
-    const interval = setInterval(() => {
-      setInfoGain(prev => Math.max(0, Math.min(100, prev + (Math.random() - 0.5) * 2)));
-      setEntropy(prev => Math.max(0, Math.min(1, prev + (Math.random() - 0.5) * 0.05)));
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="flex-1 min-h-0 bg-white p-8 overflow-y-auto">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="text-blue-600"><Icon.Analytics /></div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Operational Telemetry</h2>
-        </div>
-
-        <div className="grid grid-cols-3 gap-6 mb-12">
-          <div className="p-6 border border-slate-200 rounded-xl bg-slate-50/30 text-left">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Information Gain</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-slate-900">{infoGain.toFixed(1)}%</span>
-              <span className="text-[10px] font-mono font-bold text-blue-600">+{(infoGain * 0.14).toFixed(1)}%</span>
-            </div>
-          </div>
-
-          <div className="p-6 border border-slate-200 rounded-xl bg-slate-50/30 text-left">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Entropy Residual</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-slate-900">{entropy.toFixed(2)} bits</span>
-              <span className="text-[10px] font-mono font-bold text-blue-600">-{(entropy * 0.2).toFixed(2)}</span>
-            </div>
-          </div>
-
-          <div className="p-6 border border-slate-200 rounded-xl bg-slate-50/30 text-left">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Fiber Bundles</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-slate-900">{fiberCount}</span>
-              <span className="text-[10px] font-mono font-bold text-blue-600">Active</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-          <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Observation History</span>
-            <span className="text-[9px] font-mono text-slate-400">SESSION_LOGS</span>
-          </div>
-          <div className="divide-y divide-slate-100 font-mono text-[11px] text-left">
-            {history.length > 0 ? history.map((h, i) => (
-              <div key={i} className="px-6 py-4 flex gap-8 hover:bg-slate-50/50 transition-colors">
-                <span className="text-slate-300 w-24 shrink-0">[{h.time}]</span>
-                <span className="text-blue-600 font-bold w-32 shrink-0">{h.event}</span>
-                <span className="text-slate-600 italic">"{h.desc}"</span>
-              </div>
-            )) : (
-              <div className="p-20 text-center text-slate-300 italic text-xs uppercase tracking-widest">No active telemetry</div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// --- View 3: Library (Theory & Abstract) ---
+// --- View 2: Library (Theory & Abstract) ---
 const LibraryView = () => (
   <div className="flex-1 min-h-0 bg-white p-12 overflow-y-auto text-left">
     <article className="max-w-3xl mx-auto">
@@ -655,7 +575,7 @@ const MAX_FIBER_BUNDLES = 300;
 
 const QuotientSymmetry: React.FC = () => {
   // Page navigation state
-  const [page, setPage] = useState<'lab' | 'analytics' | 'library'>('lab');
+  const [page, setPage] = useState<'lab' | 'library'>('lab');
 
   const [shapeId, setShapeId] = useState<ShapeId>("sphere");
   const [halfAngle, setHalfAngle] = useState(0.4);
@@ -683,9 +603,6 @@ const QuotientSymmetry: React.FC = () => {
   }>>([]);
   const [stamps, setStamps] = useState<Array<{ dir: Vec3; color: string; id: number }>>([]);
   const [stampCaps, setStampCaps] = useState<StampCapData[]>([]);
-
-  // Telemetry history for Analytics view
-  const [telemetryHistory, setTelemetryHistory] = useState<TelemetryEntry[]>([]);
 
   // Keyboard event handlers for drive mode
   useEffect(() => {
@@ -726,21 +643,10 @@ const QuotientSymmetry: React.FC = () => {
     };
   }, [driveMode]);
 
-  // Add telemetry log helper
-  const addTelemetry = useCallback((event: string, desc: string) => {
-    const entry: TelemetryEntry = {
-      time: new Date().toLocaleTimeString(),
-      event,
-      desc
-    };
-    setTelemetryHistory(prev => [entry, ...prev].slice(0, 50)); // Keep last 50 entries
-  }, []);
-
   // Callback when clicking quotient sphere - updates direction + stamps both representatives
   const handleQuotientClick = useCallback((dir: Vec3) => {
     const negDir: Vec3 = [-dir[0], -dir[1], -dir[2]];
     setCurrentDir(dir);
-    addTelemetry("STAMP", `Stamped [u] at [${dir.map(v => v.toFixed(2)).join(', ')}]`);
 
     const stampId = Date.now();
     setStamps((prev) => [
@@ -759,14 +665,13 @@ const QuotientSymmetry: React.FC = () => {
         timestamp: stampId
       }
     ]);
-  }, [uColor, negUColor, addTelemetry]);
+  }, [uColor, negUColor]);
 
   // Manual stamp at current direction/aperture (for the Stamp button)
   const addStamp = useCallback(() => {
     const id = Date.now();
     setStampCaps(prev => [...prev, { dir: currentDir, aperture: halfAngle, uColor, negUColor, id }]);
-    addTelemetry("STAMP_CAP", `Stamped θ=${halfAngle.toFixed(2)} at [${currentDir.map(v => v.toFixed(2)).join(', ')}]`);
-  }, [currentDir, halfAngle, uColor, negUColor, addTelemetry]);
+  }, [currentDir, halfAngle, uColor, negUColor]);
 
   // Spawn fiber bundle during drive mode
   const spawnFiberBundle = useCallback((dir: Vec3) => {
@@ -834,7 +739,6 @@ const QuotientSymmetry: React.FC = () => {
           <nav className="flex gap-1 sm:gap-2 min-w-0 overflow-x-auto pr-1">
             {[
               { id: 'lab' as const, label: 'Laboratory', icon: <Icon.Laboratory /> },
-              { id: 'analytics' as const, label: 'Analytics', icon: <Icon.Analytics /> },
               { id: 'library' as const, label: 'Library', icon: <Icon.Library /> }
             ].map((btn) => (
               <button
@@ -903,10 +807,7 @@ const QuotientSymmetry: React.FC = () => {
                       angle={halfAngle}
                       uColor={uColor}
                       negUColor={negUColor}
-                      onUpdate={(dir) => {
-                        setCurrentDir(dir);
-                        addTelemetry("DIRECTION", `Updated direction to [${dir.map(v => v.toFixed(2)).join(', ')}]`);
-                      }}
+                      onUpdate={(dir) => setCurrentDir(dir)}
                     />
                     <StampedDirections stamps={stamps} meshData={meshData} />
                     <StampCapsLayer caps={stampCaps} radius={meshRadius * 1.008} />
@@ -1011,11 +912,6 @@ const QuotientSymmetry: React.FC = () => {
           </div>
         )}
 
-        {/* Analytics View */}
-        {page === 'analytics' && (
-          <AnalyticsView history={telemetryHistory} fiberCount={fiberBundles.length} />
-        )}
-
         {/* Library View */}
         {page === 'library' && <LibraryView />}
 
@@ -1026,11 +922,7 @@ const QuotientSymmetry: React.FC = () => {
               <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Base Geometry</label>
               <select
                 value={shapeId}
-                onChange={(e) => {
-                  const newShape = e.target.value as ShapeId;
-                  setShapeId(newShape);
-                  addTelemetry("SHAPE_CHANGE", `Changed geometry to ${newShape}`);
-                }}
+                onChange={(e) => setShapeId(e.target.value as ShapeId)}
                 className="bg-white/90 border border-slate-200 rounded-xl p-3 font-bold text-[11px] uppercase cursor-pointer outline-none hover:border-slate-400 transition-all shadow-sm"
               >
                 <optgroup label="PLANAR (ℝ²)">
@@ -1057,11 +949,7 @@ const QuotientSymmetry: React.FC = () => {
                 <input
                   type="range" min="0.05" max="1.5" step="0.01"
                   value={halfAngle}
-                  onChange={(e) => {
-                    const newAngle = parseFloat(e.target.value);
-                    setHalfAngle(newAngle);
-                    addTelemetry("APERTURE", `Adjusted aperture to ${newAngle.toFixed(3)} rad`);
-                  }}
+                  onChange={(e) => setHalfAngle(parseFloat(e.target.value))}
                   className="w-full accent-slate-800"
                 />
               </div>
@@ -1069,10 +957,7 @@ const QuotientSymmetry: React.FC = () => {
 
             <AntipodalColorPicker
               primaryColor={uColor}
-              onPrimaryColorChange={(color) => {
-                setUColor(color);
-                addTelemetry("COLOR", `Updated color scheme to ${color}`);
-              }}
+              onPrimaryColorChange={setUColor}
               labels={{ primary: 'u', antipodal: '−u' }}
               showHint={true}
             />
@@ -1086,7 +971,6 @@ const QuotientSymmetry: React.FC = () => {
                   setFiberBundles([]);
                   setStamps([]);
                   setStampCaps([]);
-                  addTelemetry("RESET", "System recalibrated to default state");
                 }}
                 className="w-full px-4 py-2 bg-slate-800 text-white font-black text-[9px] uppercase rounded-full hover:bg-slate-700 transition-all shadow-lg active:scale-95"
               >
