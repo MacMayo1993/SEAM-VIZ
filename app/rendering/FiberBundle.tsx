@@ -31,22 +31,16 @@ interface FiberBundleProps {
   colors: [string, string];
 
   /**
-   * Whether to show the fiber bundles
+   * Creation timestamp for time-based animation and expiry
    */
-  visible: boolean;
-
-  /**
-   * Animation progress (0 to 1)
-   */
-  animationProgress?: number;
+  timestamp: number;
 }
 
 export const FiberBundle: React.FC<FiberBundleProps> = ({
   quotientPoint,
   representatives,
   colors,
-  visible,
-  animationProgress = 1
+  timestamp
 }) => {
   const [u, negU] = representatives;
   const [colorU, colorNegU] = colors;
@@ -73,10 +67,15 @@ export const FiberBundle: React.FC<FiberBundleProps> = ({
 
   const group = useRef<THREE.Group>(null);
 
-  // Animate the appearance
+  // Animate appearance and fade-out based on wall-clock time
   useFrame(() => {
     if (group.current) {
-      group.current.children.forEach((child, idx) => {
+      const age = Date.now() - timestamp;
+      const animationProgress = Math.min(1, age / 500);
+      const visible = age < 3000;
+      group.current.visible = visible;
+
+      group.current.children.forEach((child) => {
         if (child instanceof THREE.Line) {
           const material = child.material as THREE.LineBasicMaterial;
           material.opacity = visible ? animationProgress * 0.8 : 0;
@@ -88,8 +87,6 @@ export const FiberBundle: React.FC<FiberBundleProps> = ({
       });
     }
   });
-
-  if (!visible) return null;
 
   return (
     <group ref={group}>
@@ -173,7 +170,7 @@ export const FiberBundle: React.FC<FiberBundleProps> = ({
         <meshBasicMaterial
           color="#ffffff"
           transparent
-          opacity={0.2 * animationProgress}
+          opacity={0.2}
           depthWrite={false}
         />
       </mesh>
@@ -198,25 +195,15 @@ export const FiberBundles: React.FC<FiberBundlesProps> = ({
   bundles,
   maxBundles = 5
 }) => {
-  const animatedBundles = useMemo(() => {
-    const now = Date.now();
-    return bundles.slice(-maxBundles).map(bundle => ({
-      ...bundle,
-      age: now - bundle.timestamp,
-      progress: Math.min(1, (now - bundle.timestamp) / 500) // 500ms animation
-    }));
-  }, [bundles, maxBundles]);
-
   return (
     <>
-      {animatedBundles.map((bundle, idx) => (
+      {bundles.slice(-maxBundles).map((bundle) => (
         <FiberBundle
           key={bundle.timestamp}
           quotientPoint={bundle.quotientPoint}
           representatives={bundle.representatives}
           colors={bundle.colors}
-          visible={bundle.age < 3000} // Visible for 3 seconds
-          animationProgress={bundle.progress}
+          timestamp={bundle.timestamp}
         />
       ))}
     </>
