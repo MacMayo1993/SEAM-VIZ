@@ -420,11 +420,19 @@ const MeshCapStamp = ({ dir, aperture, uColor, negUColor, meshData, elevation }:
     },
     vertexShader: `
       uniform float uElevation;
+      uniform vec3 uDir;
+      uniform float uAperture;
       varying vec3 vPosition;
       void main() {
         vPosition = position;
-        // Displace along surface normal for stacking height
-        vec3 elevated = position + normal * uElevation;
+        // Only raise vertices that lie inside the cap region
+        vec3 posDir = normalize(position);
+        float edge = 0.015;
+        float cosAperture = cos(uAperture);
+        float maskU    = smoothstep(cosAperture - edge, cosAperture + edge, dot(posDir,  uDir));
+        float maskNegU = smoothstep(cosAperture - edge, cosAperture + edge, dot(posDir, -uDir));
+        float inCap = max(maskU, maskNegU);
+        vec3 elevated = position + normal * (uElevation * inCap);
         gl_Position = projectionMatrix * modelViewMatrix * vec4(elevated, 1.0);
       }
     `,
