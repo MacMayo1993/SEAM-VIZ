@@ -394,7 +394,7 @@ interface StampCapData {
 // A single frozen stamp rendered as a shader pass on the actual mesh geometry.
 // Uses normalize(position) for direction, matching ObjectMesh's live highlight exactly,
 // so the stamp conforms perfectly to any mesh shape (torus, cube, sphere, etc.).
-const MeshCapStamp = ({ dir, aperture, uColor, negUColor, meshData }: {
+const MeshCapStamp = ({ dir, aperture, uColor, negUColor, meshData, elevation }: {
   dir: Vec3;
   aperture: number;
   uColor: string;
