@@ -389,6 +389,7 @@ interface StampCapData {
   uColor: string;
   negUColor: string;
   id: number;
+  elevation: number;
 }
 
 // A single frozen stamp rendered as a shader pass on the actual mesh geometry.
@@ -466,11 +467,9 @@ const MeshCapStamp = ({ dir, aperture, uColor, negUColor, meshData, elevation }:
   );
 };
 
-const STAMP_ELEVATION_STEP = 0.06;
-
 const StampCapsLayer = ({ caps, meshData }: { caps: StampCapData[]; meshData: Mesh }) => (
   <group>
-    {caps.map((cap, i) => (
+    {caps.map(cap => (
       <MeshCapStamp
         key={cap.id}
         dir={cap.dir}
@@ -478,7 +477,7 @@ const StampCapsLayer = ({ caps, meshData }: { caps: StampCapData[]; meshData: Me
         uColor={cap.uColor}
         negUColor={cap.negUColor}
         meshData={meshData}
-        elevation={i * STAMP_ELEVATION_STEP}
+        elevation={cap.elevation}
       />
     ))}
   </group>
@@ -735,7 +734,17 @@ const QuotientSymmetry: React.FC = () => {
   // Manual stamp at current direction/aperture (for the Stamp button)
   const addStamp = useCallback(() => {
     const id = Date.now();
-    setStampCaps(prev => [...prev, { dir: currentDir, aperture: halfAngle, uColor, negUColor, id }]);
+    const newDir = Vec3.normalize(currentDir);
+    setStampCaps(prev => {
+      // Count how many existing stamps overlap this one (angle between dirs < sum of apertures).
+      // Use |dot| so antipodal directions (same ℝP² class) count as the same location.
+      const overlapCount = prev.filter(existing => {
+        const d = Vec3.normalize(existing.dir);
+        const angle = Math.acos(Math.min(1, Math.abs(Vec3.dot(newDir, d))));
+        return angle < halfAngle + existing.aperture;
+      }).length;
+      return [...prev, { dir: currentDir, aperture: halfAngle, uColor, negUColor, id, elevation: overlapCount * 0.06 }];
+    });
   }, [currentDir, halfAngle, uColor, negUColor]);
 
   // Ref tracking currentDir for use inside pointer handlers (avoids stale closure)
