@@ -512,6 +512,40 @@ const DPad = ({ onKey }: { onKey: (key: keyof WASDState, pressed: boolean) => vo
   );
 };
 
+// Draws the diameter u → (origin) → −u inside the ℝP² sphere, making the
+// antipodal identification [u] = {u, −u} geometrically explicit.
+const IdentificationLine = ({ direction, uColor, negUColor }: {
+  direction: Vec3;
+  uColor: string;
+  negUColor: string;
+}) => {
+  const r = 1.14; // matches UDirectionMarkers marker radius
+
+  const u = useMemo(() => Vec3.normalize(direction), [direction]);
+
+  const { posU, posNegU } = useMemo(() => ({
+    posU: new Float32Array([0, 0, 0, u[0] * r, u[1] * r, u[2] * r]),
+    posNegU: new Float32Array([0, 0, 0, -u[0] * r, -u[1] * r, -u[2] * r]),
+  }), [u]);
+
+  return (
+    <group>
+      <line>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" count={2} array={posU} itemSize={3} />
+        </bufferGeometry>
+        <lineBasicMaterial color={uColor} transparent opacity={0.55} linewidth={2} depthWrite={false} />
+      </line>
+      <line>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" count={2} array={posNegU} itemSize={3} />
+        </bufferGeometry>
+        <lineBasicMaterial color={negUColor} transparent opacity={0.55} linewidth={2} depthWrite={false} />
+      </line>
+    </group>
+  );
+};
+
 const AbstractUIBackground = ({ uColor, negUColor, aperture }: { uColor: string, negUColor: string, aperture: number }) => {
   const glowOpacity = useMemo(() => {
     const normalized = (aperture - 0.05) / (1.5 - 0.05);
@@ -651,6 +685,23 @@ const QuotientSymmetry: React.FC = () => {
   const [driveAntipode, setDriveAntipode] = useState(false); // false = drive u, true = drive -u
   const driveAntipodeRef = useRef(false);
   useEffect(() => { driveAntipodeRef.current = driveAntipode; }, [driveAntipode]);
+
+  // ℤ₂ holonomy / path parity tracker.
+  // We maintain a continuous lift of the path in S² (liftRef) starting at initialLiftRef.
+  // Parity = 0 if the lift is still in the same hemisphere as the initial lift;
+  //        = 1 if the lift has wandered into the antipodal hemisphere.
+  const [parity, setParity] = useState<0 | 1>(0);
+  const liftRef = useRef<Vec3>([0, 1, 0]);
+  const initialLiftRef = useRef<Vec3>([0, 1, 0]);
+
+  useEffect(() => {
+    const prev = liftRef.current;
+    const curr = Vec3.normalize(currentDir);
+    // Continuously track the lift: choose whichever of {curr, −curr} is closer to prev
+    liftRef.current = Vec3.dot(curr, prev) >= 0 ? curr : Vec3.neg(curr);
+    setParity((Vec3.dot(liftRef.current, initialLiftRef.current) >= 0 ? 0 : 1) as 0 | 1);
+  }, [currentDir]);
+
   const [wasdKeys, setWasdKeys] = useState<WASDState>({
     w: false,
     a: false,
@@ -926,6 +977,18 @@ const QuotientSymmetry: React.FC = () => {
                 {/* D-pad — always visible for navigation */}
                 <DPad onKey={(key, pressed) => setWasdKeys(prev => ({ ...prev, [key]: pressed }))} />
 
+                {/* ℤ₂ path parity indicator */}
+                <div className="absolute bottom-4 right-3 z-10 pointer-events-none flex flex-col items-end gap-1">
+                  <div className="bg-black/55 backdrop-blur-sm px-2 py-0.5 rounded-md">
+                    <span className="text-[7px] font-black text-white/55 uppercase tracking-wider">ℤ₂ Holonomy</span>
+                  </div>
+                  <div className={`backdrop-blur-sm px-2 py-1 rounded-md transition-colors duration-300 ${parity === 0 ? 'bg-teal-500/25' : 'bg-rose-500/25'}`}>
+                    <span className={`text-[10px] font-black transition-colors duration-300 ${parity === 0 ? 'text-teal-300' : 'text-rose-300'}`}>
+                      {parity === 0 ? '↑ even' : '↓ odd'}
+                    </span>
+                  </div>
+                </div>
+
                 {/* Drive mode status badge — small, non-blocking */}
                 {driveMode && (
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
@@ -964,6 +1027,7 @@ const QuotientSymmetry: React.FC = () => {
                       driveMode={driveMode}
                     />
                     <UDirectionMarkers direction={currentDir} uColor={uColor} negUColor={negUColor} />
+                    <IdentificationLine direction={currentDir} uColor={uColor} negUColor={negUColor} />
                     <FiberBundles bundles={fiberBundles} maxBundles={5} />
                   </Center>
                 </Canvas>
@@ -975,7 +1039,8 @@ const QuotientSymmetry: React.FC = () => {
               {[
                 { label: 'Covering Map', val: 'π: S² → ℝP²' },
                 { label: 'Shape', val: shapeId, col: 'text-blue-600' },
-                { label: 'Current u', val: `[${currentDir.map(v => v.toFixed(2)).join(', ')}]`, hideOnMobile: true }
+                { label: 'Current u', val: `[${currentDir.map(v => v.toFixed(2)).join(', ')}]`, hideOnMobile: true },
+                { label: 'Path Parity', val: parity === 0 ? 'Even (0)' : 'Odd (1)', col: parity === 0 ? 'text-teal-600' : 'text-rose-500', hideOnMobile: true }
               ].map((m, i) => (
                 <div key={i} className={`px-4 sm:px-10 py-3 sm:py-4 flex flex-col items-center min-w-[80px] sm:min-w-[160px] shrink-0${m.hideOnMobile ? ' hidden sm:flex' : ''}`}>
                   <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">{m.label}</span>
@@ -1045,6 +1110,9 @@ const QuotientSymmetry: React.FC = () => {
                   setFiberBundles([]);
                   setStamps([]);
                   setStampCaps([]);
+                  liftRef.current = [0, 1, 0];
+                  initialLiftRef.current = [0, 1, 0];
+                  setParity(0);
                 }}
                 className="w-full px-4 py-2 bg-slate-800 text-white font-black text-[9px] uppercase rounded-full hover:bg-slate-700 transition-all shadow-lg active:scale-95"
               >
