@@ -8,100 +8,51 @@
 import { Vec3 } from '../../core';
 
 /**
- * Spherical coordinates representation
- */
-export interface SphericalCoords {
-  theta: number; // Azimuthal angle (rotation around Y-axis) [0, 2π]
-  phi: number;   // Polar angle (angle from +Y axis) [0, π]
-}
-
-/**
- * Converts Cartesian coordinates (Vec3) to spherical coordinates
- */
-export function cartesianToSpherical(v: Vec3): SphericalCoords {
-  const normalized = Vec3.normalize(v);
-  const [x, y, z] = normalized;
-
-  // phi = angle from +Y axis
-  const phi = Math.acos(Math.max(-1, Math.min(1, y)));
-
-  // theta = angle in XZ plane from +Z axis
-  let theta = Math.atan2(x, z);
-  if (theta < 0) theta += 2 * Math.PI;
-
-  return { theta, phi };
-}
-
-/**
- * Converts spherical coordinates to Cartesian coordinates (Vec3)
- */
-export function sphericalToCartesian(coords: SphericalCoords): Vec3 {
-  const { theta, phi } = coords;
-
-  const sinPhi = Math.sin(phi);
-  const x = sinPhi * Math.sin(theta);
-  const y = Math.cos(phi);
-  const z = sinPhi * Math.cos(theta);
-
-  return [x, y, z];
-}
-
-/**
- * Moves a point on the sphere in a given direction
+ * Moves a point on the sphere using direct axis rotations — no spherical
+ * coordinate conversion, so there is no pole singularity.
  *
- * @param current - Current position on sphere
- * @param deltaTheta - Change in azimuthal angle (radians)
- * @param deltaPhi - Change in polar angle (radians)
- * @returns New position on sphere
+ * A/D (deltaTheta): rotate around the world Y axis.
+ * W/S (deltaPhi):   rotate around the world X axis.
+ *
+ * Both axes are fixed globals, so the operation is smooth everywhere
+ * including at the north and south poles.
  */
 export function moveOnSphere(
   current: Vec3,
   deltaTheta: number,
   deltaPhi: number
 ): Vec3 {
-  // Convert to spherical
-  const coords = cartesianToSpherical(current);
+  let [x, y, z] = Vec3.normalize(current);
 
-  // Apply deltas
-  let newTheta = coords.theta + deltaTheta;
-  let newPhi = coords.phi + deltaPhi;
-
-  // Wrap theta to [0, 2π]
-  newTheta = ((newTheta % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-
-  // Handle pole crossings so direction can travel all the way over the top/bottom.
-  // Crossing phi=0 (north pole): reflect phi, flip theta by π.
-  // Crossing phi=π (south pole): same reflection. This is necessary for ℝP²
-  // where passing through a pole should emerge on the antipodal side.
-  if (newPhi < 0) {
-    newPhi = -newPhi;
-    newTheta = ((newTheta + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-  }
-  if (newPhi > Math.PI) {
-    newPhi = 2 * Math.PI - newPhi;
-    newTheta = ((newTheta + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+  // Rotate around Y axis (left/right)
+  if (Math.abs(deltaTheta) > 1e-7) {
+    const c = Math.cos(deltaTheta);
+    const s = Math.sin(deltaTheta);
+    [x, z] = [x * c + z * s, -x * s + z * c];
   }
 
-  // Convert back to Cartesian
-  return sphericalToCartesian({ theta: newTheta, phi: newPhi });
+  // Rotate around X axis (up/down, pole-crossing safe)
+  if (Math.abs(deltaPhi) > 1e-7) {
+    const c = Math.cos(deltaPhi);
+    const s = Math.sin(deltaPhi);
+    [y, z] = [y * c - z * s, y * s + z * c];
+  }
+
+  return Vec3.normalize([x, y, z]);
 }
 
 /**
  * WASD key state
  */
 export interface WASDState {
-  w: boolean; // Up (toward north pole)
-  a: boolean; // Left (counter-clockwise)
-  s: boolean; // Down (toward south pole)
-  d: boolean; // Right (clockwise)
+  w: boolean; // Up
+  a: boolean; // Left
+  s: boolean; // Down
+  d: boolean; // Right
 }
 
 /**
  * Computes the velocity vector based on WASD key state
- *
- * @param keys - Current WASD key state
- * @param speed - Movement speed (radians per second)
- * @returns Velocity as [deltaTheta, deltaPhi]
  */
 export function computeVelocity(
   keys: WASDState,
@@ -110,11 +61,8 @@ export function computeVelocity(
   let deltaTheta = 0;
   let deltaPhi = 0;
 
-  // Horizontal movement (theta)
   if (keys.a) deltaTheta -= speed;
   if (keys.d) deltaTheta += speed;
-
-  // Vertical movement (phi)
   if (keys.w) deltaPhi -= speed;
   if (keys.s) deltaPhi += speed;
 
@@ -123,12 +71,6 @@ export function computeVelocity(
 
 /**
  * Updates position based on WASD input and elapsed time
- *
- * @param current - Current position
- * @param keys - WASD key state
- * @param delta - Time elapsed since last frame (seconds)
- * @param speed - Movement speed (radians per second)
- * @returns New position
  */
 export function updatePositionFromWASD(
   current: Vec3,
@@ -137,15 +79,12 @@ export function updatePositionFromWASD(
   speed: number = 2.0
 ): Vec3 {
   const [deltaTheta, deltaPhi] = computeVelocity(keys, speed);
+  const scaledTheta = deltaTheta * delta;
+  const scaledPhi = deltaPhi * delta;
 
-  // Scale by delta time
-  const scaledDeltaTheta = deltaTheta * delta;
-  const scaledDeltaPhi = deltaPhi * delta;
-
-  // If no movement, return current position
-  if (Math.abs(scaledDeltaTheta) < 0.0001 && Math.abs(scaledDeltaPhi) < 0.0001) {
+  if (Math.abs(scaledTheta) < 0.0001 && Math.abs(scaledPhi) < 0.0001) {
     return current;
   }
 
-  return moveOnSphere(current, scaledDeltaTheta, scaledDeltaPhi);
+  return moveOnSphere(current, scaledTheta, scaledPhi);
 }

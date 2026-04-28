@@ -216,21 +216,24 @@ const DriveController = ({
   keys,
   currentPosition,
   onPositionUpdate,
-  onFiberSpawn
+  onFiberSpawn,
+  flipDir,
 }: {
   active: boolean;
   keys: WASDState;
   currentPosition: Vec3;
   onPositionUpdate: (pos: Vec3) => void;
   onFiberSpawn: (pos: Vec3) => void;
+  flipDir: boolean;
 }) => {
   const frameCountRef = useRef(0);
 
   useFrame((state, delta) => {
     if (!active) return;
 
-    // Update position based on WASD input
-    const newPosition = updatePositionFromWASD(currentPosition, keys, delta, 2.0);
+    const drivePos: Vec3 = flipDir ? Vec3.neg(currentPosition) : currentPosition;
+    const newDrivePos = updatePositionFromWASD(drivePos, keys, delta, 2.0);
+    const newPosition: Vec3 = flipDir ? Vec3.neg(newDrivePos) : newDrivePos;
 
     // Only update if position changed
     const changed = !Vec3.approxEq(newPosition, currentPosition, 0.0001);
@@ -832,6 +835,9 @@ const QuotientSymmetry: React.FC = () => {
 
   // Drive mode state — trace is on by default
   const [driveMode, setDriveMode] = useState(true);
+  const [driveAntipode, setDriveAntipode] = useState(false); // false = drive u, true = drive -u
+  const driveAntipodeRef = useRef(false);
+  useEffect(() => { driveAntipodeRef.current = driveAntipode; }, [driveAntipode]);
   const [wasdKeys, setWasdKeys] = useState<WASDState>({
     w: false,
     a: false,
@@ -951,7 +957,10 @@ const QuotientSymmetry: React.FC = () => {
     lastDrivePointerRef.current = { x: e.clientX, y: e.clientY };
     if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return;
     const speed = 0.006;
-    const newDir = moveOnSphere(currentDirRef.current, dx * speed, dy * speed);
+    const flip = driveAntipodeRef.current;
+    const drivePoint: Vec3 = flip ? Vec3.neg(currentDirRef.current) : currentDirRef.current;
+    const newPoint = moveOnSphere(drivePoint, dx * speed, dy * speed);
+    const newDir: Vec3 = flip ? Vec3.neg(newPoint) : newPoint;
     currentDirRef.current = newDir;
     setCurrentDir(newDir);
     spawnFiberBundle(newDir);
@@ -1013,7 +1022,14 @@ const QuotientSymmetry: React.FC = () => {
                 <h2 className="text-base sm:text-xl font-bold text-slate-900 tracking-tight">Manifold Mapping Laboratory</h2>
                 <p className="text-xs text-slate-500 mt-1 uppercase tracking-widest font-medium hidden sm:block">Real-time projective identification: S² → ℝP²</p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
+                <button
+                  onClick={() => setDriveAntipode(v => !v)}
+                  title="Switch which antipode you are driving"
+                  className={`px-2 py-2 sm:px-3 rounded text-[11px] font-black uppercase border transition-all ${driveAntipode ? 'bg-red-600 text-white border-red-600' : 'bg-teal-500 text-white border-teal-500'}`}
+                >
+                  {driveAntipode ? '−u' : 'u'}
+                </button>
                 <button
                   onClick={addStamp}
                   className="px-3 py-2 sm:px-5 rounded text-[11px] font-bold uppercase border transition-all bg-white text-slate-700 border-slate-300 hover:border-slate-900"
@@ -1032,9 +1048,10 @@ const QuotientSymmetry: React.FC = () => {
             <div className="flex-1 flex flex-col md:flex-row p-2 gap-2 sm:p-8 sm:gap-8 overflow-visible md:overflow-hidden">
               {/* Object Space */}
               <section className="h-[280px] sm:h-[340px] md:h-full flex-1 relative rounded-[2.5rem] bg-white/40 border border-white/50 overflow-hidden shadow-inner">
-                <div className="absolute top-4 left-4 sm:top-8 sm:left-10 z-10 pointer-events-none max-w-[70%]">
-                  <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em]">{leftPanelTitle}</h2>
-                  <p className="text-[8px] text-slate-300 mt-1">Points highlighted under identification u ≡ −u</p>
+                <div className="absolute top-3 left-3 z-10 pointer-events-none">
+                  <div className="bg-black/55 backdrop-blur-sm px-2 py-1 rounded-md">
+                    <h2 className="text-[9px] font-black text-white/90 uppercase tracking-widest">{leftPanelTitle}</h2>
+                  </div>
                 </div>
                 <Canvas shadows dpr={[1, 2]}>
                   <PerspectiveCamera makeDefault position={[3.5, 2.5, 4.5]} fov={35} />
@@ -1076,10 +1093,14 @@ const QuotientSymmetry: React.FC = () => {
 
               {/* Projective Selector */}
               <section className="h-[280px] sm:h-[340px] md:h-full flex-1 relative rounded-[2.5rem] bg-white shadow-xl overflow-hidden border border-slate-100/50">
-                <div className="absolute top-4 right-4 sm:top-8 sm:right-10 z-10 text-right pointer-events-none max-w-[75%]">
-                  <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em]">QUOTIENT SPACE (ℝP²)</h2>
-                  <div className="flex flex-col gap-1 mt-2">
-                    <span className="text-[9px] font-bold text-slate-300 uppercase italic">{driveMode ? 'Drag or use D-pad to navigate' : 'Click to choose [u]'}</span>
+                <div className="absolute top-3 right-3 z-10 text-right pointer-events-none">
+                  <div className="inline-flex flex-col items-end gap-1">
+                    <div className="bg-black/55 backdrop-blur-sm px-2 py-1 rounded-md">
+                      <h2 className="text-[9px] font-black text-white/90 uppercase tracking-widest">QUOTIENT SPACE (ℝP²)</h2>
+                    </div>
+                    <div className="bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-md">
+                      <span className="text-[8px] font-bold text-white/65 uppercase">{driveMode ? `Driving ${driveAntipode ? '−u' : 'u'}` : 'Click to choose [u]'}</span>
+                    </div>
                   </div>
                 </div>
 
@@ -1125,6 +1146,7 @@ const QuotientSymmetry: React.FC = () => {
                       currentPosition={currentDir}
                       onPositionUpdate={setCurrentDir}
                       onFiberSpawn={spawnFiberBundle}
+                      flipDir={driveAntipode}
                     />
                     <SelectorInstrument
                       direction={currentDir}
