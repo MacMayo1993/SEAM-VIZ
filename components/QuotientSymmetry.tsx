@@ -476,6 +476,35 @@ const StampCapsLayer = ({ caps, meshData }: { caps: StampCapData[]; meshData: Me
   </group>
 );
 
+const DPad = ({ onKey }: { onKey: (key: keyof WASDState, pressed: boolean) => void }) => {
+  const cell: React.CSSProperties = {
+    width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(255,255,255,0.18)',
+    borderRadius: 9, color: 'rgba(255,255,255,0.88)', cursor: 'pointer',
+    touchAction: 'none', userSelect: 'none',
+  };
+
+  const bind = (key: keyof WASDState) => ({
+    style: cell,
+    onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+      (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+      onKey(key, true);
+    },
+    onPointerUp() { onKey(key, false); },
+    onPointerLeave() { onKey(key, false); },
+  });
+
+  return (
+    <div style={{ position: 'absolute', left: 10, bottom: 52, zIndex: 25, display: 'grid', gridTemplateColumns: '40px 40px 40px', gap: 4 }}>
+      <div /><div {...bind('w')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div><div />
+      <div {...bind('a')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+      <div style={{ ...cell, opacity: 0.15, cursor: 'default' }} />
+      <div {...bind('d')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+      <div /><div {...bind('s')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div><div />
+    </div>
+  );
+};
+
 const AbstractUIBackground = ({ uColor, negUColor, aperture }: { uColor: string, negUColor: string, aperture: number }) => {
   const glowOpacity = useMemo(() => {
     const normalized = (aperture - 0.05) / (1.5 - 0.05);
@@ -610,8 +639,8 @@ const QuotientSymmetry: React.FC = () => {
   // Antipodal color is always computed from uColor
   const negUColor = useMemo(() => getAntipodalColor(uColor), [uColor]);
 
-  // Drive mode state
-  const [driveMode, setDriveMode] = useState(false);
+  // Drive mode state — trace is on by default
+  const [driveMode, setDriveMode] = useState(true);
   const [wasdKeys, setWasdKeys] = useState<WASDState>({
     w: false,
     a: false,
@@ -750,7 +779,7 @@ const QuotientSymmetry: React.FC = () => {
   }, [shapeId]);
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-white text-slate-800 font-sans antialiased">
+    <div className="flex flex-col h-[100dvh] text-slate-800 font-sans antialiased" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)' }}>
       {/* Universal Technical Header */}
       <header className="h-auto min-h-14 border-b border-slate-200 flex items-center justify-between px-2 sm:px-6 py-2 sm:py-0 shrink-0 z-50 bg-white/80 backdrop-blur-md">
         <div className="flex items-center gap-2 sm:gap-6 min-w-0 overflow-hidden">
@@ -787,7 +816,7 @@ const QuotientSymmetry: React.FC = () => {
       <main className="flex-1 min-h-0 overflow-y-auto md:overflow-hidden flex flex-col">
         {/* Laboratory View - The Core Visualization */}
         {page === 'lab' && (
-          <div className="flex-1 flex flex-col relative bg-slate-50/50 overflow-visible md:overflow-hidden">
+          <div className="flex-1 flex flex-col relative overflow-visible md:overflow-hidden">
             <div className="flex justify-between items-start mb-4 px-4 pt-4 sm:mb-8 sm:px-8 sm:pt-8">
               <div className="text-left">
                 <h2 className="text-base sm:text-xl font-bold text-slate-900 tracking-tight">Manifold Mapping Laboratory</h2>
@@ -804,7 +833,7 @@ const QuotientSymmetry: React.FC = () => {
                   onClick={() => setDriveMode(!driveMode)}
                   className={`px-3 py-2 sm:px-6 rounded text-[11px] font-bold uppercase border transition-all ${driveMode ? 'bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-900/10' : 'bg-white text-slate-700 border-slate-300 hover:border-slate-900'}`}
                 >
-                  {driveMode ? 'Halt' : 'Trace'}
+                  {driveMode ? 'Halt' : 'Resume'}
                 </button>
               </div>
             </div>
@@ -859,7 +888,7 @@ const QuotientSymmetry: React.FC = () => {
                 <div className="absolute top-4 right-4 sm:top-8 sm:right-10 z-10 text-right pointer-events-none max-w-[75%]">
                   <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em]">QUOTIENT SPACE (ℝP²)</h2>
                   <div className="flex flex-col gap-1 mt-2">
-                    <span className="text-[9px] font-bold text-slate-300 uppercase italic">Click to choose [u] — selects u and −u</span>
+                    <span className="text-[9px] font-bold text-slate-300 uppercase italic">{driveMode ? 'Drag or use D-pad to navigate' : 'Click to choose [u]'}</span>
                   </div>
                 </div>
 
@@ -874,6 +903,9 @@ const QuotientSymmetry: React.FC = () => {
                     onPointerLeave={handleDrivePointerUp}
                   />
                 )}
+                {/* D-pad — always visible for navigation */}
+                <DPad onKey={(key, pressed) => setWasdKeys(prev => ({ ...prev, [key]: pressed }))} />
+
                 {/* Drive mode status badge — small, non-blocking */}
                 {driveMode && (
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
