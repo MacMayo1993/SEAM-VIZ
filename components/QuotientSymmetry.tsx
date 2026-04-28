@@ -400,6 +400,7 @@ const MeshCapStamp = ({ dir, aperture, uColor, negUColor, meshData }: {
   uColor: string;
   negUColor: string;
   meshData: Mesh;
+  elevation: number;
 }) => {
   const geometry = useMemo(() => {
     const g = new THREE.BufferGeometry();
@@ -415,12 +416,16 @@ const MeshCapStamp = ({ dir, aperture, uColor, negUColor, meshData }: {
       uAperture: { value: aperture },
       uColorU: { value: new THREE.Color(uColor) },
       uColorNegU: { value: new THREE.Color(negUColor) },
+      uElevation: { value: elevation },
     },
     vertexShader: `
+      uniform float uElevation;
       varying vec3 vPosition;
       void main() {
         vPosition = position;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        // Displace along surface normal for stacking height
+        vec3 elevated = position + normal * uElevation;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(elevated, 1.0);
       }
     `,
     fragmentShader: `
@@ -430,6 +435,7 @@ const MeshCapStamp = ({ dir, aperture, uColor, negUColor, meshData }: {
       uniform vec3 uColorNegU;
       varying vec3 vPosition;
       void main() {
+        // Use original position (before elevation) for cap region test
         vec3 posDir = normalize(vPosition);
         float dotU = dot(posDir, uDir);
         float dotNegU = dot(posDir, -uDir);
@@ -443,18 +449,20 @@ const MeshCapStamp = ({ dir, aperture, uColor, negUColor, meshData }: {
         gl_FragColor = vec4(color, alpha);
       }
     `
-  }), [dir, aperture, uColor, negUColor]);
+  }), [dir, aperture, uColor, negUColor, elevation]);
 
   return (
-    <mesh geometry={geometry} renderOrder={27}>
+    <mesh geometry={geometry} renderOrder={27 + elevation * 100}>
       <shaderMaterial args={[shaderArgs]} transparent depthWrite={false} side={THREE.DoubleSide} />
     </mesh>
   );
 };
 
+const STAMP_ELEVATION_STEP = 0.06;
+
 const StampCapsLayer = ({ caps, meshData }: { caps: StampCapData[]; meshData: Mesh }) => (
   <group>
-    {caps.map(cap => (
+    {caps.map((cap, i) => (
       <MeshCapStamp
         key={cap.id}
         dir={cap.dir}
@@ -462,6 +470,7 @@ const StampCapsLayer = ({ caps, meshData }: { caps: StampCapData[]; meshData: Me
         uColor={cap.uColor}
         negUColor={cap.negUColor}
         meshData={meshData}
+        elevation={i * STAMP_ELEVATION_STEP}
       />
     ))}
   </group>
