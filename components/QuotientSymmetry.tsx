@@ -400,54 +400,79 @@ interface StampCapData {
   id: number;
 }
 
-// A single persistent cone cap rendered on the state-space mesh.
-// The geometry is a sphere cap that starts at the "north pole" and is
-// rotated to face `dir`, exactly matching the live cone in the right panel.
-const SphericalCapStamp = ({ dir, aperture, color, radius }: {
+// A single frozen stamp rendered as a shader pass on the actual mesh geometry.
+// Uses normalize(position) for direction, matching ObjectMesh's live highlight exactly,
+// so the stamp conforms perfectly to any mesh shape (torus, cube, sphere, etc.).
+const MeshCapStamp = ({ dir, aperture, uColor, negUColor, meshData }: {
   dir: Vec3;
   aperture: number;
-  color: string;
-  radius: number;
+  uColor: string;
+  negUColor: string;
+  meshData: Mesh;
 }) => {
-  const quaternion = useMemo(() => {
-    const q = new THREE.Quaternion();
-    const up = new THREE.Vector3(0, 1, 0);
-    const target = new THREE.Vector3(...dir).normalize();
-    if (up.dot(target) < -0.9999) {
-      q.set(1, 0, 0, 0);
-    } else {
-      q.setFromUnitVectors(up, target);
-    }
-    return q;
-  }, [dir]);
+  const geometry = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(meshData.vertices.flat()), 3));
+    g.setIndex(meshData.indices);
+    g.computeVertexNormals();
+    return g;
+  }, [meshData]);
+
+  const shaderArgs = useMemo(() => ({
+    uniforms: {
+      uDir: { value: new THREE.Vector3(...dir).normalize() },
+      uAperture: { value: aperture },
+      uColorU: { value: new THREE.Color(uColor) },
+      uColorNegU: { value: new THREE.Color(negUColor) },
+    },
+    vertexShader: `
+      varying vec3 vPosition;
+      void main() {
+        vPosition = position;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uDir;
+      uniform float uAperture;
+      uniform vec3 uColorU;
+      uniform vec3 uColorNegU;
+      varying vec3 vPosition;
+      void main() {
+        vec3 posDir = normalize(vPosition);
+        float dotU = dot(posDir, uDir);
+        float dotNegU = dot(posDir, -uDir);
+        float cosAperture = cos(uAperture);
+        float edge = 0.015;
+        float maskU = smoothstep(cosAperture - edge, cosAperture + edge, dotU);
+        float maskNegU = smoothstep(cosAperture - edge, cosAperture + edge, dotNegU);
+        float alpha = max(maskU, maskNegU) * 0.45;
+        if (alpha < 0.01) discard;
+        vec3 color = maskU >= maskNegU ? uColorU : uColorNegU;
+        gl_FragColor = vec4(color, alpha);
+      }
+    `
+  }), [dir, aperture, uColor, negUColor]);
 
   return (
-    <mesh quaternion={quaternion} renderOrder={26}>
-      <sphereGeometry args={[radius, 48, 24, 0, Math.PI * 2, 0, aperture]} />
-      <meshStandardMaterial
-        color={color}
-        transparent
-        opacity={0.38}
-        side={THREE.DoubleSide}
-        depthWrite={false}
-        emissive={color}
-        emissiveIntensity={0.18}
-      />
+    <mesh geometry={geometry} renderOrder={27}>
+      <shaderMaterial args={[shaderArgs]} transparent depthWrite={false} side={THREE.DoubleSide} />
     </mesh>
   );
 };
 
-const StampCapsLayer = ({ caps, radius }: { caps: StampCapData[]; radius: number }) => (
+const StampCapsLayer = ({ caps, meshData }: { caps: StampCapData[]; meshData: Mesh }) => (
   <group>
-    {caps.map(cap => {
-      const negDir = Vec3.neg(Vec3.normalize(cap.dir));
-      return (
-        <React.Fragment key={cap.id}>
-          <SphericalCapStamp dir={cap.dir} aperture={cap.aperture} color={cap.uColor} radius={radius} />
-          <SphericalCapStamp dir={negDir} aperture={cap.aperture} color={cap.negUColor} radius={radius} />
-        </React.Fragment>
-      );
-    })}
+    {caps.map(cap => (
+      <MeshCapStamp
+        key={cap.id}
+        dir={cap.dir}
+        aperture={cap.aperture}
+        uColor={cap.uColor}
+        negUColor={cap.negUColor}
+        meshData={meshData}
+      />
+    ))}
   </group>
 );
 
@@ -908,10 +933,7 @@ const QuotientSymmetry: React.FC = () => {
   }, []);
 
   const meshData = useMemo(() => makeShapeMesh(shapeId, 64), [shapeId]);
-  const meshRadius = useMemo(
-    () => Math.max(0.5, ...meshData.vertices.map(([x, y, z]) => Math.sqrt(x * x + y * y + z * z))) * 1.01,
-    [meshData]
-  );
+
 
   const leftPanelTitle = useMemo(() => {
     const planar = ["circle", "disk", "triangle", "square"];
@@ -1001,7 +1023,7 @@ const QuotientSymmetry: React.FC = () => {
                       onUpdate={(dir) => setCurrentDir(dir)}
                     />
                     <StampedDirections stamps={stamps} meshData={meshData} />
-                    <StampCapsLayer caps={stampCaps} radius={meshRadius * 1.008} />
+                    <StampCapsLayer caps={stampCaps} meshData={meshData} />
                   </Center>
                 </Canvas>
               </section>
