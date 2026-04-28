@@ -69,8 +69,18 @@ export function moveOnSphere(
   // Wrap theta to [0, 2π]
   newTheta = ((newTheta % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
 
-  // Clamp phi to [0.01, π - 0.01] to avoid poles
-  newPhi = Math.max(0.01, Math.min(Math.PI - 0.01, newPhi));
+  // Handle pole crossings so direction can travel all the way over the top/bottom.
+  // Crossing phi=0 (north pole): reflect phi, flip theta by π.
+  // Crossing phi=π (south pole): same reflection. This is necessary for ℝP²
+  // where passing through a pole should emerge on the antipodal side.
+  if (newPhi < 0) {
+    newPhi = -newPhi;
+    newTheta = ((newTheta + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+  }
+  if (newPhi > Math.PI) {
+    newPhi = 2 * Math.PI - newPhi;
+    newTheta = ((newTheta + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+  }
 
   // Convert back to Cartesian
   return sphericalToCartesian({ theta: newTheta, phi: newPhi });
