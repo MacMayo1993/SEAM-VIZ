@@ -216,18 +216,14 @@ const DriveController = ({
   keys,
   currentPosition,
   onPositionUpdate,
-  onFiberSpawn,
   flipDir,
 }: {
   active: boolean;
   keys: WASDState;
   currentPosition: Vec3;
   onPositionUpdate: (pos: Vec3) => void;
-  onFiberSpawn: (pos: Vec3) => void;
   flipDir: boolean;
 }) => {
-  const frameCountRef = useRef(0);
-
   useFrame((state, delta) => {
     if (!active) return;
 
@@ -235,16 +231,8 @@ const DriveController = ({
     const newDrivePos = updatePositionFromWASD(drivePos, keys, delta, 2.0);
     const newPosition: Vec3 = flipDir ? Vec3.neg(newDrivePos) : newDrivePos;
 
-    // Only update if position changed
-    const changed = !Vec3.approxEq(newPosition, currentPosition, 0.0001);
-    if (changed) {
+    if (!Vec3.approxEq(newPosition, currentPosition, 0.0001)) {
       onPositionUpdate(newPosition);
-
-      // Spawn fiber bundles every 3 frames (~20 per second at 60fps)
-      frameCountRef.current++;
-      if (frameCountRef.current % 3 === 0) {
-        onFiberSpawn(newPosition);
-      }
     }
   });
 
@@ -733,20 +721,6 @@ const QuotientSymmetry: React.FC = () => {
     setStampCaps(prev => [...prev, { dir: currentDir, aperture: halfAngle, uColor, negUColor, id }]);
   }, [currentDir, halfAngle, uColor, negUColor]);
 
-  // Spawn fiber bundle during drive mode
-  const spawnFiberBundle = useCallback((dir: Vec3) => {
-    const negDir: Vec3 = [-dir[0], -dir[1], -dir[2]];
-    setFiberBundles(prev => [
-      ...prev.slice(-(MAX_FIBER_BUNDLES - 1)),
-      {
-        quotientPoint: dir,
-        representatives: [dir, negDir],
-        colors: [uColor, negUColor],
-        timestamp: Date.now()
-      }
-    ]);
-  }, [uColor, negUColor]);
-
   // Ref tracking currentDir for use inside pointer handlers (avoids stale closure)
   const currentDirRef = useRef<Vec3>(currentDir);
   useEffect(() => { currentDirRef.current = currentDir; }, [currentDir]);
@@ -772,8 +746,7 @@ const QuotientSymmetry: React.FC = () => {
     const newDir: Vec3 = flip ? Vec3.neg(newPoint) : newPoint;
     currentDirRef.current = newDir;
     setCurrentDir(newDir);
-    spawnFiberBundle(newDir);
-  }, [spawnFiberBundle]);
+  }, []);
 
   const handleDrivePointerUp = useCallback(() => {
     lastDrivePointerRef.current = null;
@@ -846,7 +819,7 @@ const QuotientSymmetry: React.FC = () => {
                   Stamp
                 </button>
                 <button
-                  onClick={() => setDriveMode(!driveMode)}
+                  onClick={() => { setDriveMode(v => { if (!v) setFiberBundles([]); return !v; }); }}
                   className={`px-3 py-2 sm:px-6 rounded text-[11px] font-bold uppercase border transition-all ${driveMode ? 'bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-900/10' : 'bg-white text-slate-700 border-slate-300 hover:border-slate-900'}`}
                 >
                   {driveMode ? 'Halt' : 'Resume'}
@@ -954,7 +927,6 @@ const QuotientSymmetry: React.FC = () => {
                       keys={wasdKeys}
                       currentPosition={currentDir}
                       onPositionUpdate={setCurrentDir}
-                      onFiberSpawn={spawnFiberBundle}
                       flipDir={driveAntipode}
                     />
                     <SelectorInstrument
